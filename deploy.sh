@@ -20,7 +20,8 @@
 #   VPS_APP_DIR             — App directory on VPS
 #   GIT_REMOTE              — Git remote name (default: origin)
 #   GIT_BRANCH              — Git branch to deploy (default: main)
-#   APP_PORT                — Host port for the web server (default: 3000)
+#   APP_PORT                — Host port only used by the local Docker option (default: 3001)
+#                             Not used in Dokploy/Traefik deployments.
 #   DOMAIN                  — Production domain for display
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -67,7 +68,7 @@ fi
 GIT_REMOTE=${GIT_REMOTE:-"origin"}
 GIT_BRANCH=${GIT_BRANCH:-"main"}
 DOMAIN=${DOMAIN:-"codearchy.dev"}
-APP_PORT=${APP_PORT:-"3000"}
+APP_PORT=${APP_PORT:-"3001"}
 VPS_USER=${VPS_USER:-"root"}
 VPS_SSH_KEY=${VPS_SSH_KEY:-"$HOME/.ssh/id_rsa"}
 VPS_APP_DIR=${VPS_APP_DIR:-"/etc/dokploy/compose/codearchy-web"}
@@ -75,7 +76,7 @@ VPS_APP_DIR=${VPS_APP_DIR:-"/etc/dokploy/compose/codearchy-web"}
 # ── Choose deployment method ──────────────────────────────────────────────────
 echo ""
 print_info "Select deployment method:"
-echo "  1) Local Docker  — build & run production image locally"
+echo "  1) Local Docker  — build & run directly (no Traefik, uses APP_PORT=$APP_PORT)"
 echo "  2) Hostinger VPS via Dokploy"
 echo ""
 read -rp "Enter choice [1-2]: " deploy_choice

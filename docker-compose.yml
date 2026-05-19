@@ -1,16 +1,14 @@
 # CodeArchy Web — Production Docker Compose
 #
-# Single source of truth used by:
-#   - Local / standalone production runs:   docker compose up -d
-#   - Hostinger VPS via Dokploy:            Dokploy reads this file directly,
-#                                           injects its own `dokploy-network`
-#                                           and Traefik labels based on the
-#                                           service domain configured in the UI.
+# Designed for Dokploy + Traefik on Hostinger.
+# Traefik routes domain traffic directly to the container over the internal
+# dokploy-network — NO host port mapping is needed or desired here.
 #
-# Notes:
-#   - The web server listens on port 80 inside the container.
-#   - `APP_PORT` in .env controls the host port (default 3000).
-#   - Do NOT use `network_mode: host` — it breaks Traefik / Dokploy routing.
+# For local standalone runs without Dokploy use docker-compose.dev.yml
+# (which does expose a host port for direct browser access).
+#
+# Do NOT add `ports:` — it causes "port already allocated" errors and bypasses
+# Traefik. Do NOT use `network_mode: host`.
 
 services:
   codearchy-web:
@@ -21,8 +19,6 @@ services:
     image: codearchy-web:latest
     container_name: codearchy-web
     restart: unless-stopped
-    ports:
-      - "${APP_PORT:-3000}:80"
     networks:
       - codearchy-network
     healthcheck:
