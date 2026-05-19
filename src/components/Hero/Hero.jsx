@@ -70,18 +70,16 @@ export default function Hero() {
         <div className="hero__media reveal">
           <div className="hero__video-frame">
             <div className="hero__video-glow" aria-hidden="true" />
-            <video
-              className="hero__video"
-              autoPlay
-              muted
-              loop
-              playsInline
-              poster="/assets/images/explainer.png"
-              aria-label="CodeArchy demo video"
-            >
-              <source src="/assets/video/codearchy.mp4" type="video/mp4" />
-              <img src="/assets/images/explainer.png" alt="CodeArchy architecture visualization" />
-            </video>
+            <div className="hero__youtube-wrap">
+              <iframe
+                className="hero__youtube"
+                src="https://www.youtube.com/embed/Z3AP8o8IwI4?rel=0&modestbranding=1"
+                title="CodeArchy — Offline AI Architecture Visualizer for VS Code"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                loading="lazy"
+              />
+            </div>
           </div>
         </div>
       </div>
