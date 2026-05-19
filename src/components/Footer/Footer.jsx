@@ -10,7 +10,7 @@ export default function Footer() {
         {/* Brand */}
         <div className="footer__brand">
           <a href="#" className="footer__logo">
-            <img src="/assets/images/logo.png" alt="CodeArchy logo" width="28" height="28" />
+            <img src="/assets/images/logo-white.png" alt="CodeArchy logo" width="28" height="28" />
             <span>CodeArchy</span>
           </a>
           <p className="footer__tagline">

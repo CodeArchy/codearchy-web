@@ -25,7 +25,7 @@ export default function Header() {
     <header className={`header${scrolled ? ' header--scrolled' : ''}`}>
       <div className="container header__inner">
         <a href="#" className="header__logo" onClick={closeMenu}>
-          <img src="/assets/images/logo.png" alt="CodeArchy logo" width="32" height="32" />
+          <img src="/assets/images/logo-white.png" alt="CodeArchy logo" width="32" height="32" />
           <span>CodeArchy</span>
         </a>
 
