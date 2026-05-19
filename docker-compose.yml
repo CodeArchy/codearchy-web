@@ -19,15 +19,9 @@ services:
     image: codearchy-web:latest
     container_name: codearchy-web
     restart: unless-stopped
-    networks:
-      - dokploy-network
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:80/"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 15s
-
-networks:
-  dokploy-network:
-    external: true
