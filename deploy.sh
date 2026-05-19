@@ -46,7 +46,7 @@ print_success "Docker is available"
 
 # ── Load .env ─────────────────────────────────────────────────────────────────
 _dotenv_get() {
-    grep -E "^${1}=" .env 2>/dev/null | tail -1 | cut -d= -f2- | tr -d '\r' | sed -e 's/^"//' -e 's/"$//'
+    { grep -E "^${1}=" .env 2>/dev/null || true; } | tail -1 | cut -d= -f2- | tr -d '\r' | sed -e 's/^"//' -e 's/"$//'
 }
 
 if [ -f ".env" ]; then
