@@ -32,7 +32,7 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Lightweight health-check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD wget -qO- http://localhost:80/ || exit 1
+    CMD wget -q -O /dev/null http://localhost/ || exit 1
 
 EXPOSE 80
 
