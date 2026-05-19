@@ -1,0 +1,121 @@
+.roadmap {
+  padding: var(--section-padding);
+  background: linear-gradient(180deg, transparent 0%, rgba(66, 165, 245, 0.03) 50%, transparent 100%);
+}
+
+.roadmap__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.roadmap__col {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.roadmap__col-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.roadmap__col-header--done {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.08) 0%, rgba(66, 165, 245, 0.08) 100%);
+}
+
+.roadmap__col-header--upcoming {
+  background: linear-gradient(135deg, rgba(124, 77, 255, 0.08) 0%, rgba(66, 165, 245, 0.08) 100%);
+}
+
+.roadmap__col-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.roadmap__col-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  flex: 1;
+  margin: 0;
+}
+
+.roadmap__list {
+  list-style: none;
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.roadmap__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  font-size: 0.875rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.roadmap__item:last-child {
+  border-bottom: none;
+}
+
+.roadmap__item--done {
+  color: var(--text-secondary);
+}
+
+.roadmap__item--upcoming {
+  color: var(--text-secondary);
+}
+
+.roadmap__check {
+  color: var(--color-green);
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.roadmap__dot {
+  width: 6px;
+  height: 6px;
+  background: var(--border-bright);
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+.roadmap__contribute {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0 1.5rem 1.5rem;
+  padding: 0.85rem 1.25rem;
+  background: rgba(124, 77, 255, 0.06);
+  border: 1px solid rgba(124, 77, 255, 0.2);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-purple-light);
+  text-decoration: none;
+  transition: all var(--transition-base);
+}
+
+.roadmap__contribute:hover {
+  background: rgba(124, 77, 255, 0.1);
+  border-color: var(--color-purple);
+  color: var(--color-purple-light);
+}
+
+@media (max-width: 680px) {
+  .roadmap__grid {
+    grid-template-columns: 1fr;
+  }
+}

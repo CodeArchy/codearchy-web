@@ -1,0 +1,37 @@
+# CodeArchy Web — Production Docker Compose
+#
+# Single source of truth used by:
+#   - Local / standalone production runs:   docker compose up -d
+#   - Hostinger VPS via Dokploy:            Dokploy reads this file directly,
+#                                           injects its own `dokploy-network`
+#                                           and Traefik labels based on the
+#                                           service domain configured in the UI.
+#
+# Notes:
+#   - The web server listens on port 80 inside the container.
+#   - `APP_PORT` in .env controls the host port (default 3000).
+#   - Do NOT use `network_mode: host` — it breaks Traefik / Dokploy routing.
+
+services:
+  codearchy-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    image: codearchy-web:latest
+    container_name: codearchy-web
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3000}:80"
+    networks:
+      - codearchy-network
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+networks:
+  codearchy-network:
+    driver: bridge

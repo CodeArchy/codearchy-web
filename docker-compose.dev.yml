@@ -1,0 +1,23 @@
+# CodeArchy Web — Development Docker Compose
+# Hot-reload Vite dev server
+
+services:
+  codearchy-web-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: codearchy-web:dev
+    container_name: codearchy-web-dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    networks:
+      - codearchy-dev-network
+
+networks:
+  codearchy-dev-network:
+    driver: bridge

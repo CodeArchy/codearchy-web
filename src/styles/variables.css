@@ -1,0 +1,63 @@
+/* ─── Design Tokens ─────────────────────────────────────────── */
+:root {
+  /* Brand colours */
+  --color-purple:        #7c4dff;
+  --color-purple-light:  #9e75ff;
+  --color-purple-dark:   #5c35cc;
+  --color-blue:          #42a5f5;
+  --color-blue-light:    #6cbcf7;
+  --color-blue-dark:     #1e7fc9;
+  --color-green:         #4caf50;
+  --color-green-light:   #6fc572;
+  --color-green-dark:    #388e3c;
+
+  /* Gradients */
+  --gradient-primary:    linear-gradient(135deg, #7c4dff 0%, #42a5f5 100%);
+  --gradient-hero:       linear-gradient(135deg, #7c4dff 0%, #5a6aff 50%, #42a5f5 100%);
+  --gradient-green:      linear-gradient(135deg, #4caf50 0%, #42a5f5 100%);
+  --gradient-card:       linear-gradient(135deg, rgba(124,77,255,0.08) 0%, rgba(66,165,245,0.08) 100%);
+
+  /* Backgrounds */
+  --bg-base:             #09090f;
+  --bg-surface:          #0f0f1e;
+  --bg-surface-2:        #151528;
+  --bg-card:             #12121f;
+  --bg-card-hover:       #171730;
+
+  /* Borders */
+  --border-subtle:       rgba(124, 77, 255, 0.15);
+  --border-card:         rgba(124, 77, 255, 0.2);
+  --border-bright:       rgba(124, 77, 255, 0.4);
+
+  /* Text */
+  --text-primary:        #f0f0ff;
+  --text-secondary:      #9090b8;
+  --text-muted:          #5a5a7a;
+  --text-code:           #a8d8ff;
+
+  /* Shadows */
+  --shadow-card:         0 4px 24px rgba(0, 0, 0, 0.4);
+  --shadow-glow-purple:  0 0 40px rgba(124, 77, 255, 0.25);
+  --shadow-glow-blue:    0 0 40px rgba(66, 165, 245, 0.2);
+
+  /* Typography */
+  --font-body:           'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono:           'JetBrains Mono', 'Fira Code', monospace;
+
+  /* Spacing */
+  --section-padding:     6rem 1.5rem;
+  --section-padding-sm:  4rem 1.5rem;
+  --max-width:           1100px;
+  --max-width-narrow:    720px;
+
+  /* Radius */
+  --radius-sm:           6px;
+  --radius-md:           12px;
+  --radius-lg:           20px;
+  --radius-xl:           32px;
+
+  /* Transitions */
+  --transition-fast:     0.15s ease;
+  --transition-base:     0.25s ease;
+  --transition-slow:     0.4s ease;
+}
