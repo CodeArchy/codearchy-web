@@ -1,3 +1,5 @@
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faRocket } from '@fortawesome/free-solid-svg-icons'
 import './Install.css'
 
 const PREREQS = [
@@ -71,7 +73,7 @@ export default function Install() {
         {/* Quick start note */}
         <div className="install__quickstart reveal">
           <div className="install__quickstart-inner">
-            <span className="install__quickstart-icon">🚀</span>
+            <span className="install__quickstart-icon"><FontAwesomeIcon icon={faRocket} /></span>
             <div>
               <h3 className="install__quickstart-title">Quick Start</h3>
               <p className="install__quickstart-desc">

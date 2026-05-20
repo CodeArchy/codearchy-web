@@ -10,13 +10,13 @@ const SCREENSHOTS = [
   },
   {
     src: '/assets/images/flow-visualization.png',
-    alt: 'CodeArchy React Flow interactive diagram',
-    label: 'React Flow Diagram',
+    alt: 'CodeArchy Flow interactive diagram',
+    label: 'Flow Diagram',
     desc: 'Interactive pan, zoom, and click-to-inspect architecture diagrams.',
   },
   {
     src: '/assets/images/dense-visualization.png',
-    alt: 'CodeArchy Cytoscape dense graph visualization',
+    alt: 'CodeArchy Dense graph visualization',
     label: 'Dense Graph View',
     desc: 'Cytoscape.js layout handles large, complex dependency networks effortlessly.',
   },

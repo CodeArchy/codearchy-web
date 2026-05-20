@@ -22,7 +22,7 @@ const STEPS = [
   {
     num: '04',
     title: 'Render',
-    desc: 'Structured response is parsed into ArchitectureNode and ArchitectureEdge objects and rendered in React Flow.',
+    desc: 'Structured response is parsed into ArchitectureNode and ArchitectureEdge objects and rendered.',
     color: 'blue',
   },
   {
