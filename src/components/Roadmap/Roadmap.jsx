@@ -23,7 +23,7 @@ const UPCOMING = [
   'Architecture diff view (detect structural drift between branches)',
   'Team knowledge base — share architectural annotations across a repo',
   'Extended language support — PHP, C#, C++, Ruby, Swift & more',
-  'Backup & restore — save and restore architecture, conversations, and explainer sections',
+  'Backup & restore — save and restore architectures, conversations, and explainer sessions',
 ]
 
 export default function Roadmap() {
