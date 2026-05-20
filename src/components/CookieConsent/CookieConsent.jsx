@@ -25,6 +25,17 @@ export default function CookieConsent() {
 
   const save = (savedPrefs) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...savedPrefs, ts: Date.now() }))
+
+    // Update Google Consent Mode v2 signals
+    if (typeof window.gtag === 'function') {
+      window.gtag('consent', 'update', {
+        analytics_storage:  savedPrefs.analytics ? 'granted' : 'denied',
+        ad_storage:         savedPrefs.marketing ? 'granted' : 'denied',
+        ad_user_data:       savedPrefs.marketing ? 'granted' : 'denied',
+        ad_personalization: savedPrefs.marketing ? 'granted' : 'denied',
+      })
+    }
+
     setVisible(false)
   }
 

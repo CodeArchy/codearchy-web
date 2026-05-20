@@ -79,6 +79,43 @@
     }
     </script>
 
+    <!-- Google tag (gtag.js) — Consent Mode v2 -->
+    <!-- analytics_storage and ad_storage default to 'denied' until the user
+         explicitly accepts cookies via the consent banner. -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){ dataLayer.push(arguments); }
+
+      // Default: deny all consent signals before user choice
+      gtag('consent', 'default', {
+        analytics_storage:  'denied',
+        ad_storage:         'denied',
+        ad_user_data:       'denied',
+        ad_personalization: 'denied',
+        wait_for_update:    500
+      });
+
+      // Restore consent from a previous session (if already stored)
+      ;(function () {
+        try {
+          var stored = JSON.parse(localStorage.getItem('codearchy_cookie_consent') || 'null');
+          if (stored) {
+            gtag('consent', 'update', {
+              analytics_storage:  stored.analytics  ? 'granted' : 'denied',
+              ad_storage:         stored.marketing  ? 'granted' : 'denied',
+              ad_user_data:       stored.marketing  ? 'granted' : 'denied',
+              ad_personalization: stored.marketing  ? 'granted' : 'denied'
+            });
+          }
+        } catch (_) {}
+      })();
+    </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-REPDR6673K"></script>
+    <script>
+      gtag('js', new Date());
+      gtag('config', 'G-REPDR6673K', { send_page_view: true });
+    </script>
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
