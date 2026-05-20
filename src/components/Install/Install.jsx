@@ -15,7 +15,7 @@ const PREREQS = [
     num: '2',
     title: 'Pull a Gemma 4 Model',
     desc: 'Choose a variant based on your hardware. The e2b model is recommended to start.',
-    code: '# Recommended — fast on most machines\nollama pull gemma4:e2b\n\n# Deeper reasoning\nollama pull gemma4:e4b',
+    code: '# Recommended — fast on most machines\nollama pull gemma4:e2b\n\n# Deeper reasoning — better architectural analysis on powerful machines\nollama pull gemma4:e4b\n\n# Maximum depth — extensive analysis for large or complex codebases\nollama pull gemma4:26b',
   },
   {
     num: '3',
