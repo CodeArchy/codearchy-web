@@ -67,7 +67,7 @@ fi
 # Defaults
 GIT_REMOTE=${GIT_REMOTE:-"origin"}
 GIT_BRANCH=${GIT_BRANCH:-"main"}
-DOMAIN=${DOMAIN:-"codearchy.dev"}
+DOMAIN=${DOMAIN:-"codearchy.com"}
 APP_PORT=${APP_PORT:-"3001"}
 VPS_USER=${VPS_USER:-"root"}
 VPS_SSH_KEY=${VPS_SSH_KEY:-"$HOME/.ssh/id_rsa"}

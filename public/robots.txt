@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://codearchy.dev/sitemap.xml
+Sitemap: https://codearchy.com/sitemap.xml
