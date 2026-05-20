@@ -86,7 +86,7 @@ export default function Privacy() {
           <Section id="who-we-are" title="1. Who We Are">
             <p>
               CodeArchy is an open-source VS Code extension created and maintained by{' '}
-              <strong>Kennedy Yinusa</strong> ("we", "us", "our"). The extension and its
+              <strong>I. Kennedy Yinusa</strong> ("we", "us", "our"). The extension and its
               accompanying website (<em>this site</em>) are provided free of charge under the{' '}
               <a href={`${GITHUB_REPO}/blob/main/LICENSE`} target="_blank" rel="noopener noreferrer">
                 MIT License
@@ -340,7 +340,7 @@ export default function Privacy() {
           <p>
             © {new Date().getFullYear()} CodeArchy by{' '}
             <a href="https://github.com/iyinusa" target="_blank" rel="noopener noreferrer">
-              Kennedy Yinusa
+              I. Kennedy Yinusa
             </a>. Released under the{' '}
             <a href={`${GITHUB_REPO}/blob/main/LICENSE`} target="_blank" rel="noopener noreferrer">
               MIT License

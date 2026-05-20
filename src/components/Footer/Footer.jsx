@@ -75,7 +75,7 @@ export default function Footer() {
       <div className="footer__bottom">
         <div className="container footer__bottom-inner">
           <p className="footer__copy">
-            © {year} CodeArchy, created by <a href="https://github.com/iyinusa" target="_blank" rel="noopener noreferrer">Kennedy Yinusa</a>. Released under the{' '}
+            © {year} CodeArchy, created by <a href="https://github.com/iyinusa" target="_blank" rel="noopener noreferrer">I. Kennedy Yinusa</a>. Released under the{' '}
             <a href="https://github.com/iyinusa/codearchy/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>.
           </p>
           <a
