@@ -22,6 +22,8 @@ const UPCOMING = [
   'Custom subsystem annotation rules',
   'Architecture diff view (detect structural drift between branches)',
   'Team knowledge base — share architectural annotations across a repo',
+  'Extended language support — PHP, C#, C++, Ruby, Swift & more',
+  'Backup & restore — save and restore architecture, conversations, and explainer sections',
 ]
 
 export default function Roadmap() {
