@@ -44,7 +44,7 @@ export default function Hero() {
             Install Free on VS Code
           </a>
           <a
-            href="https://github.com/iyinusa/codearchy"
+            href="https://github.com/CodeArchy/codearchy"
             className="btn btn--outline btn--lg"
             target="_blank"
             rel="noopener noreferrer"

@@ -96,7 +96,7 @@ export default function Install() {
             Install on VS Code Marketplace
           </a>
           <a
-            href="https://github.com/iyinusa/codearchy"
+            href="https://github.com/CodeArchy/codearchy"
             className="btn btn--outline btn--lg"
             target="_blank"
             rel="noopener noreferrer"

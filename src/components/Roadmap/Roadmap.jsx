@@ -77,7 +77,7 @@ export default function Roadmap() {
 
             {/* Contribute CTA */}
             <a
-              href="https://github.com/iyinusa/codearchy/blob/main/CONTRIBUTING.md"
+              href="https://github.com/CodeArchy/codearchy/blob/main/CONTRIBUTING.md"
               className="roadmap__contribute"
               target="_blank"
               rel="noopener noreferrer"
