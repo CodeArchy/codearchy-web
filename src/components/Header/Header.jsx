@@ -53,7 +53,7 @@ export default function Header() {
 
         <div className="header__actions">
           <a
-            href="https://github.com/iyinusa/codearchy"
+            href="https://github.com/CodeArchy/codearchy"
             className="btn btn--ghost btn--sm header__github"
             target="_blank"
             rel="noopener noreferrer"
@@ -93,7 +93,7 @@ export default function Header() {
           ))}
           <div className="header__mobile-actions">
             <a
-              href="https://github.com/iyinusa/codearchy"
+              href="https://github.com/CodeArchy/codearchy"
               className="btn btn--ghost"
               target="_blank"
               rel="noopener noreferrer"
