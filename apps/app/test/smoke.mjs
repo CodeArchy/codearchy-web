@@ -63,10 +63,32 @@ for (const name of wanted) {
     page.setDefaultTimeout(120_000);
     const problems = [];
     page.on('pageerror', (e) => problems.push(`pageerror: ${e.message}`));
+    // The AI host checks its providers as soon as a card is shown: Ollama and LM Studio aren't running here
+    // (connection refused; WebKit reports that as an access-control failure) and the test key is rejected (401).
+    // Only those messages are tolerated. CSP violations and page errors never are.
+    const expectedProbe = (t) =>
+        // (WebKit says "Could not connect to the server." on macOS, "Could not connect to localhost: Connection refused" on Linux.)
+        /Could not connect to (the server|localhost|127\.0\.0\.1)|Connection refused|ERR_CONNECTION_REFUSED|NetworkError when attempting to fetch|status of 401/i.test(t) ||
+        /Fetch API cannot load http:\/\/(localhost|127\.0\.0\.1):(11434|1234)\/.* due to access control checks/.test(t);
+    // Provider checks, counted (routes see the worker's requests where the browser allows; the console where it logs them).
+    let probes = 0;
     page.on('console', (m) => {
         const t = m.text();
-        if (m.type() === 'error' || /Content.Security.Policy|Refused to/i.test(t)) problems.push(`console: ${t}`);
+        if (/Content.Security.Policy|Refused to/i.test(t)) problems.push(`console: ${t}`);
+        else if (m.type() === 'error' && !expectedProbe(t)) problems.push(`console: ${t}`);
+        else if (expectedProbe(t)) probes++;
     });
+    for (const local of ['http://localhost:11434/**', 'http://localhost:1234/**']) {
+        await context.route(local, (route) => {
+            probes++;
+            return route.continue();
+        });
+    }
+    // A provider check with the test key gets the answer Anthropic gives a bad key, without the network where the
+    // browser lets tests route a worker's requests (the real API returns the same 401 otherwise).
+    await context.route('https://api.anthropic.com/**', (route) => (probes++,
+        route.fulfill({ status: 401, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ type: 'error', error: { type: 'authentication_error', message: 'invalid x-api-key' } }) })),
+    );
     const node = (key) => page.locator(`.react-flow__node[data-id="${key}"]`);
     const started = Date.now();
     try {
@@ -89,8 +111,64 @@ for (const name of wanted) {
         await node('pkg:rust').waitFor();
         assert.match(await page.locator('.status').textContent(), new RegExp(`${GOLDEN_POLYGLOT.files.length} files`), 'zip: golden file count');
 
+        // AI: settings (private by default, Ollama setup for this origin, keys), an auto-summary card, and chat
+        // that offers setup when no model is ready. Then a reload keeps the key (encrypted) and the tier.
+        const KEY = 'sk-ant-smoke-not-a-real-key-0123456789';
+        // Selecting nodes showed auto-built cards: no provider may have been contacted yet.
+        assert.equal(probes, 0, 'no AI provider is contacted before AI is used');
+        await page.getByRole('button', { name: 'AI', exact: true }).click();
+        const settings = page.getByRole('dialog', { name: 'AI settings' });
+        await settings.getByLabel(/Local only/).waitFor();
+        assert.equal(await settings.getByLabel(/Local only/).isChecked(), true, 'local only by default');
+        const ollama = settings.locator('[data-provider="ollama"]');
+        await ollama.getByText('not reachable').waitFor();
+        await ollama.locator('summary').click();
+        const origin = new URL(base).origin;
+        const setupText = await ollama.locator('.ca-setup').textContent();
+        assert.ok(setupText.includes('OLLAMA_ORIGINS') && setupText.includes(`"${origin}"`), `setup steps name this origin: ${setupText}`);
+        const anthropic = settings.locator('[data-provider="anthropic"]');
+        await anthropic.getByText(/privacy tier is local only/).waitFor();
+        // The tier is the host's state: the radio flips once the worker has applied it.
+        await settings.getByLabel(/^Structure Names/).click();
+        await anthropic.getByText('needs an API key').waitFor();
+        await anthropic.getByLabel('Anthropic API key').fill(KEY);
+        await anthropic.getByRole('button', { name: 'Save' }).click();
+        await anthropic.getByText(/key rejected|not reachable/).waitFor();
+        assert.equal(await anthropic.getByLabel('Anthropic API key').inputValue(), '', 'the field is cleared');
+        assert.match(await anthropic.getByLabel('Anthropic API key').getAttribute('placeholder'), /Key saved/);
+        await settings.getByRole('button', { name: 'Close' }).click();
+
+        await node('pkg:rust').click();
+        await page.locator('.ca-card .ca-chip', { hasText: 'auto-summary' }).waitFor();
+        await page.getByRole('tab', { name: 'Ask' }).click();
+        await page.locator('.ca-chat').getByRole('button', { name: 'Set up AI' }).waitFor();
+
+        await page.reload();
+        await page.getByRole('button', { name: 'Try the sample' }).click();
+        await node('pkg:rust').waitFor();
+        await page.getByRole('button', { name: 'AI', exact: true }).click();
+        await settings.getByLabel(/^Structure Names/).waitFor();
+        assert.equal(await settings.getByLabel(/^Structure Names/).isChecked(), true, 'the tier persists');
+        assert.match(await settings.locator('[data-provider="anthropic"]').getByLabel('Anthropic API key').getAttribute('placeholder'), /Key saved/, 'the key persists');
+        const leaked = await page.evaluate(
+            (key) =>
+                new Promise((resolve) => {
+                    const open = indexedDB.open('codearchy-ai');
+                    open.onsuccess = () => {
+                        const req = open.result.transaction('kv').objectStore('kv').getAll();
+                        req.onsuccess = () => {
+                            const text = req.result.map((v) => (v instanceof ArrayBuffer ? new TextDecoder().decode(v) : JSON.stringify(v, (_, x) => (x instanceof ArrayBuffer || ArrayBuffer.isView(x) ? new TextDecoder().decode(x) : x)))).join('\n');
+                            resolve(text.includes(key));
+                        };
+                    };
+                }),
+            KEY,
+        );
+        assert.equal(leaked, false, 'the key is not stored in plain text');
+        assert.ok(probes > 0, 'the probe counter saw the provider checks once AI was used (so the zero above means something)');
+
         assert.deepEqual(problems, [], 'no CSP violations or page errors');
-        console.log(`✓ ${name.padEnd(8)} sample, Map, Inspector, code viewer, zip; strict CSP (${Date.now() - started} ms)`);
+        console.log(`✓ ${name.padEnd(8)} sample, Map, Inspector, code viewer, zip; AI settings, key encrypted and kept, auto-summary, chat setup; strict CSP (${Date.now() - started} ms)`);
     } catch (err) {
         failed++;
         console.log(`✗ ${name}: ${err.message}${problems.length ? `\n    ${problems.slice(0, 5).join('\n    ')}` : ''}`);

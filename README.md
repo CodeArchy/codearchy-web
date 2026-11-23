@@ -5,7 +5,7 @@ The CodeArchy websites:
 | Host | App | What |
 |---|---|---|
 | `codearchy.com` | [`apps/site`](apps/site) | The marketing site (React + Vite) |
-| `app.codearchy.com` | [`apps/app`](apps/app) | The CodeArchy web app: open a folder, a `.zip` or the sample, and see its architecture. Code is analysed in the browser and never uploaded. |
+| `app.codearchy.com` | [`apps/app`](apps/app) | The CodeArchy web app: open a folder, a `.zip` or the sample, and see its architecture. Code is analysed in the browser and never uploaded to CodeArchy. Optional AI (chat and summaries) is off by default. When it's on, calls go straight from the browser to the provider the user chooses, within the privacy tier they set. |
 
 The engine and UI come from [CodeArchy/codearchy](https://github.com/CodeArchy/codearchy) (`@codearchy/*` packages). They are not on npm yet. Instead, they're built from the commit pinned in [`codearchy.json`](codearchy.json), which is checked out into `.codearchy/` (git-ignored).
 
@@ -27,6 +27,8 @@ pnpm codearchy:build
 # The marketing site (keeps its own npm lockfile, built exactly as before)
 pnpm dev:site               # or: cd apps/site && npm ci && npm run dev
 ```
+
+**AI in the web app.** The AI host (`apps/app/src/ai`) runs in the engine worker and loads on first use. API keys are encrypted in IndexedDB under a non-extractable WebCrypto key. Ollama and LM Studio are reached on `localhost`; the settings panel shows the one-time setup with this site's origin (`OLLAMA_ORIGINS`). Providers are only contacted once someone uses AI. The CSP's `connect-src` lists exactly the provider APIs and the two localhost ports.
 
 Tests: `pnpm build:app && pnpm test:app` runs the app in Chromium, Firefox and WebKit. It serves the build with the security headers from `docker/nginx/app-headers.conf`, so the test runs under the CSP that ships.
 
