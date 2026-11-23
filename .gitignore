@@ -1,6 +1,9 @@
 # Dependencies
 node_modules/
 
+# The codearchy checkout the web app is built from (scripts/codearchy.mjs)
+.codearchy
+
 # Build output
 dist/
 
@@ -21,3 +24,7 @@ npm-debug.log*
 
 # Docker
 *.tar
+
+# Engine assets copied at build time (apps/app/scripts/assets.mjs)
+apps/app/public/engine/
+apps/app/src/generated/

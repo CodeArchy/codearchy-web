@@ -1,0 +1,13 @@
+# The web app plus the @codearchy/* packages it is built from. Those come from
+# a checkout of the codearchy repository in .codearchy/ (git-ignored):
+#   pnpm codearchy:fetch           the commit pinned in codearchy.json
+#   pnpm dev:link ../codearchy     a local checkout, to change both repos together
+# apps/site is deliberately not in the workspace: it keeps its npm lockfile, so
+# the marketing site builds byte-for-byte as before.
+packages:
+  - apps/app
+  - .codearchy/packages/*
+  - .codearchy/packages/languages/*
+
+onlyBuiltDependencies:
+  - esbuild

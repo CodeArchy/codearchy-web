@@ -1,23 +1,21 @@
 {
-  "name": "codearchy-web",
-  "version": "1.0.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview --host 0.0.0.0 --port 3001"
-  },
-  "dependencies": {
-    "@fortawesome/fontawesome-svg-core": "^7.2.0",
-    "@fortawesome/free-brands-svg-icons": "^7.2.0",
-    "@fortawesome/free-solid-svg-icons": "^7.2.0",
-    "@fortawesome/react-fontawesome": "^3.3.1",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.1",
-    "vite": "^5.4.2"
-  }
+    "name": "codearchy-web",
+    "version": "1.0.0",
+    "private": true,
+    "description": "codearchy.com (apps/site) and the CodeArchy web app at app.codearchy.com (apps/app).",
+    "license": "MIT",
+    "packageManager": "pnpm@10.34.9",
+    "engines": {
+        "node": ">=22.12"
+    },
+    "scripts": {
+        "codearchy:fetch": "node scripts/codearchy.mjs fetch",
+        "codearchy:build": "node scripts/codearchy.mjs build",
+        "dev:link": "node scripts/codearchy.mjs link",
+        "dev:app": "pnpm --filter @codearchy/app dev",
+        "build:app": "pnpm codearchy:build && pnpm --filter @codearchy/app build",
+        "test:app": "pnpm --filter @codearchy/app test:e2e",
+        "dev:site": "npm --prefix apps/site run dev",
+        "build:site": "npm --prefix apps/site ci && npm --prefix apps/site run build"
+    }
 }
