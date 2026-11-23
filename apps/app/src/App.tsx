@@ -1,0 +1,201 @@
+/**
+ * The CodeArchy web app: open a folder, a .zip or the sample; the engine
+ * indexes it in this browser (nothing is uploaded) and the Map shows its
+ * architecture. A picked folder stays live: edits on disk show up in place.
+ */
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type DragEvent } from 'react';
+import { CodeArchyMap } from '@codearchy/ui';
+import type { WorkspaceSummary } from '@codearchy/protocol';
+import { WorkerEngine, canPickDirectory, pickDirectory, sourceFromDrop, sourceFromFileList, sourceFromZip, type EngineSource } from '@codearchy/platform-browser/client';
+import { CodeViewer } from './CodeViewer';
+import { ENGINE_BASE } from './generated/engine';
+
+type Phase = { kind: 'landing' } | { kind: 'indexing'; label: string; progress?: string } | { kind: 'ready' };
+interface Viewer {
+    path: string;
+    line?: number;
+    text: string;
+}
+
+function useDarkMode(): boolean {
+    const query = useMemo(() => window.matchMedia('(prefers-color-scheme: dark)'), []);
+    const [dark, setDark] = useState(query.matches);
+    useEffect(() => {
+        const on = () => setDark(query.matches);
+        query.addEventListener('change', on);
+        return () => query.removeEventListener('change', on);
+    }, [query]);
+    return dark;
+}
+
+export function App() {
+    const engine = useMemo(() => new WorkerEngine(new Worker(new URL('./engine.worker.ts', import.meta.url), { type: 'module' })), []);
+    const [phase, setPhase] = useState<Phase>({ kind: 'landing' });
+    const [summary, setSummary] = useState<WorkspaceSummary>();
+    const [error, setError] = useState<string>();
+    const [revision, setRevision] = useState(0);
+    const [dataVersion, setDataVersion] = useState(0);
+    const [notice, setNotice] = useState<string>();
+    const [viewer, setViewer] = useState<Viewer>();
+    const [dragging, setDragging] = useState(false);
+    const folderInput = useRef<HTMLInputElement>(null);
+    const zipInput = useRef<HTMLInputElement>(null);
+    const dark = useDarkMode();
+
+    useEffect(
+        () =>
+            engine.onEvent((e) => {
+                if (e.type === 'progress') {
+                    setPhase((p) => (p.kind === 'indexing' ? { ...p, progress: `${e.phase} ${e.current.toLocaleString()} / ${e.total.toLocaleString()}` } : p));
+                } else {
+                    setSummary(e.summary);
+                    setDataVersion((v) => v + 1);
+                    setNotice(`${e.paths.length} file${e.paths.length === 1 ? '' : 's'} changed on disk`);
+                }
+            }),
+        [engine]
+    );
+
+    const open = async (source: EngineSource | undefined, label: string) => {
+        if (!source) return;
+        setError(undefined);
+        setNotice(undefined);
+        setViewer(undefined);
+        setPhase({ kind: 'indexing', label });
+        try {
+            const s = await engine.open(source);
+            setSummary(s);
+            setRevision((r) => r + 1);
+            setPhase({ kind: 'ready' });
+        } catch (err) {
+            setError((err as Error).message.split('\n')[0]);
+            setPhase({ kind: 'landing' });
+        }
+    };
+
+    const openFolder = async () => {
+        if (!canPickDirectory()) return folderInput.current?.click();
+        try {
+            await open(await pickDirectory(), 'the folder');
+        } catch (err) {
+            setError((err as Error).message);
+        }
+    };
+    const openSample = async () => {
+        const files: Record<string, string> = await (await fetch(`${ENGINE_BASE}samples/polyglot.json`)).json();
+        await open({ kind: 'texts', name: 'polyglot sample', files }, 'the sample');
+    };
+    const onFolderInput = (e: ChangeEvent<HTMLInputElement>) => {
+        const source = sourceFromFileList(e.target.files ?? []);
+        e.target.value = '';
+        void open(source, 'the folder');
+    };
+    const onZipInput = async (e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        e.target.value = '';
+        if (file) await open(await sourceFromZip(file), file.name);
+    };
+    const onDrop = (e: DragEvent) => {
+        e.preventDefault();
+        setDragging(false);
+        void sourceFromDrop(e.dataTransfer).then((s) => open(s, 'the dropped item'));
+    };
+
+    const openFile = async (path: string, line?: number) => {
+        const text = await engine.readFile(path);
+        if (text !== undefined) setViewer({ path, line, text });
+    };
+
+    return (
+        <div
+            className={`app${dragging ? ' app-dragging' : ''}`}
+            onDragOver={(e) => {
+                e.preventDefault();
+                setDragging(true);
+            }}
+            onDragLeave={(e) => e.currentTarget === e.target && setDragging(false)}
+            onDrop={onDrop}
+        >
+            <input ref={folderInput} type="file" hidden onChange={onFolderInput} {...{ webkitdirectory: '', directory: '' }} />
+            <input ref={zipInput} type="file" hidden accept=".zip,application/zip" onChange={(e) => void onZipInput(e)} />
+
+            {phase.kind === 'ready' && summary ? (
+                <div className="workspace">
+                    <CodeArchyMap
+                        client={engine}
+                        host={{ openFile: (p, l) => void openFile(p, l) }}
+                        layoutWorkerUrl={`${ENGINE_BASE}elk-worker.js`}
+                        hostKind="web"
+                        revision={String(revision)}
+                        dataVersion={dataVersion}
+                        toolbarExtras={
+                            <>
+                                <span className="status" title={`${summary.files.toLocaleString()} files · ${summary.edges.toLocaleString()} dependencies · index in ${summary.storage === 'opfs' ? 'browser storage' : 'memory'}`}>
+                                    {summary.live ? <span className="live" aria-label="watching for changes">● live</span> : null} {notice ?? `${summary.files.toLocaleString()} files`}
+                                </span>
+                                <button type="button" className="ca-search-button" onClick={() => setPhase({ kind: 'landing' })}>
+                                    Open another…
+                                </button>
+                            </>
+                        }
+                    />
+                    {viewer ? <CodeViewer {...viewer} dark={dark} onClose={() => setViewer(undefined)} /> : null}
+                </div>
+            ) : (
+                <main className="landing">
+                    <h1>
+                        <img src="/icon.svg" alt="" width={40} height={40} /> CodeArchy
+                    </h1>
+                    <p className="tagline">See the architecture of any codebase: packages, components, dependencies and cycles, drill-down from the top.</p>
+                    <p className="privacy">Everything runs in this browser. Your code is never uploaded.</p>
+                    {phase.kind === 'indexing' ? (
+                        <div className="indexing" role="status">
+                            <div className="spinner" aria-hidden />
+                            Indexing {phase.label}… <span className="muted">{phase.progress}</span>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="actions">
+                                <button type="button" className="primary" onClick={() => void openFolder()}>
+                                    Open a folder
+                                </button>
+                                <button type="button" onClick={() => zipInput.current?.click()}>
+                                    Open a .zip
+                                </button>
+                                <button type="button" onClick={() => void openSample()}>
+                                    Try the sample
+                                </button>
+                            </div>
+                            <p className="muted">…or drop a folder or a .zip anywhere on this page.</p>
+                            {canPickDirectory() ? (
+                                <p className="muted">A folder you open stays live: edits on disk show up on the Map.</p>
+                            ) : (
+                                <p className="muted">In this browser a folder is read once; Chromium-based browsers can also follow your edits live.</p>
+                            )}
+                            {summary ? (
+                                <p>
+                                    <button type="button" className="link" onClick={() => setPhase({ kind: 'ready' })}>
+                                        Back to {summary.name}
+                                    </button>
+                                </p>
+                            ) : null}
+                        </>
+                    )}
+                    {error ? (
+                        <p className="error" role="alert">
+                            Could not open it: {error}
+                        </p>
+                    ) : null}
+                    <p className="muted small">
+                        TypeScript, JavaScript, Python, Java, Kotlin, Go, Rust, C#, PHP and Ruby. Open source:{' '}
+                        <a href="https://github.com/CodeArchy/codearchy" rel="noopener noreferrer">
+                            github.com/CodeArchy/codearchy
+                        </a>
+                        .
+                    </p>
+                </main>
+            )}
+            {dragging ? <div className="drop-hint">Drop a folder or a .zip to open it</div> : null}
+        </div>
+    );
+}

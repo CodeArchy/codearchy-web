@@ -1,14 +1,15 @@
 # CodeArchy Web — Development Dockerfile
-# Hot-reload Vite dev server for local development
+# Hot-reload Vite dev server for the marketing site (apps/site).
+# The web app runs with `pnpm dev:app` (see README).
 
 FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY apps/site/package*.json ./
 RUN npm ci
 
-COPY . .
+COPY apps/site/ .
 
 EXPOSE 5173
 

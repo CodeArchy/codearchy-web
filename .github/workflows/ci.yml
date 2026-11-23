@@ -1,0 +1,61 @@
+# Builds and tests both sites; never deploys (Dokploy deploys from main).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  site:
+    name: Site (apps/site)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/site
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm run build
+
+  app:
+    name: Web app (apps/app)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+      - name: Enable pnpm (Corepack, version from package.json)
+        run: corepack enable
+      - name: Check out codearchy at the pinned commit
+        run: node scripts/codearchy.mjs fetch
+      - run: pnpm install --frozen-lockfile
+      - name: Build the @codearchy packages and the app
+        run: pnpm build:app
+      - name: Install browsers
+        run: pnpm --filter @codearchy/app exec playwright install --with-deps chromium firefox webkit
+      - name: Smoke test (Chromium, Firefox, WebKit; production CSP)
+        run: pnpm test:app
+
+  image:
+    name: Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Build (not pushed)
+        run: docker build -t codearchy-web:ci .
+      - name: Both hosts answer
+        run: |
+          docker run -d --name web -p 8080:80 codearchy-web:ci
+          for i in $(seq 1 20); do curl -fs -o /dev/null http://127.0.0.1:8080/ && break; sleep 1; done
+          curl -fs -H "Host: codearchy.com" http://127.0.0.1:8080/ | grep -q '<div id="root">'
+          curl -fsI -H "Host: app.codearchy.com" http://127.0.0.1:8080/ | grep -qi "content-security-policy: default-src 'self'"
+          curl -fsI -H "Host: app.codearchy.com" http://127.0.0.1:8080/sw.js | grep -qi "cache-control: no-cache"

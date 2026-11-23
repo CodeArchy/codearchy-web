@@ -1,6 +1,9 @@
 # Dependencies
 node_modules/
 
+# The codearchy checkout the web app is built from (scripts/codearchy.mjs)
+.codearchy
+
 # Build output (rebuilt during Docker build)
 dist/
 

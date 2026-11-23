@@ -1,5 +1,5 @@
 # CodeArchy Web — Development Docker Compose
-# Hot-reload Vite dev server
+# Hot-reload Vite dev server for the marketing site (apps/site)
 
 services:
   codearchy-web-dev:
@@ -11,7 +11,7 @@ services:
     ports:
       - "5173:5173"
     volumes:
-      - .:/app
+      - ./apps/site:/app
       - /app/node_modules
     environment:
       - NODE_ENV=development
