@@ -12,7 +12,7 @@ export default defineConfig({
             manifest: {
                 name: 'CodeArchy',
                 short_name: 'CodeArchy',
-                description: "Your codebase's architecture, computed in your browser. Your code never leaves your machine.",
+                description: "Your codebase's architecture, computed in your browser. Private by default: nothing is uploaded to CodeArchy.",
                 theme_color: '#15171c',
                 background_color: '#15171c',
                 display: 'standalone',

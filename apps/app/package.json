@@ -13,8 +13,10 @@
         "test:e2e": "node test/smoke.mjs"
     },
     "dependencies": {
+        "@codearchy/ai": "workspace:*",
         "@codearchy/platform-browser": "workspace:*",
         "@codearchy/protocol": "workspace:*",
+        "@codearchy/providers": "workspace:*",
         "@codearchy/ui": "workspace:*",
         "@codemirror/lang-go": "6.0.1",
         "@codemirror/lang-java": "6.0.2",

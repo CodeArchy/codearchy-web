@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef, useState, type ChangeEvent, type DragEvent 
 import { CodeArchyMap } from '@codearchy/ui';
 import type { WorkspaceSummary } from '@codearchy/protocol';
 import { WorkerEngine, canPickDirectory, pickDirectory, sourceFromDrop, sourceFromFileList, sourceFromZip, type EngineSource } from '@codearchy/platform-browser/client';
+import { workerAiClient } from './ai/client';
 import { CodeViewer } from './CodeViewer';
 import { ENGINE_BASE } from './generated/engine';
 
@@ -40,6 +41,7 @@ function useDarkMode(): boolean {
 
 export function App() {
     const engine = useMemo(() => new WorkerEngine(new Worker(new URL('./engine.worker.ts', import.meta.url), { type: 'module' })), []);
+    const ai = useMemo(() => workerAiClient(engine), [engine]);
     const [phase, setPhase] = useState<Phase>({ kind: 'landing' });
     const [summary, setSummary] = useState<WorkspaceSummary>();
     const [error, setError] = useState<string>();
@@ -138,6 +140,7 @@ export function App() {
                         hostKind="web"
                         revision={String(revision)}
                         dataVersion={dataVersion}
+                        ai={ai}
                         toolbarStart={
                             <button type="button" className="brand" title="CodeArchy: open another codebase" onClick={() => setPhase({ kind: 'landing' })}>
                                 <Logo size={20} />
@@ -163,7 +166,7 @@ export function App() {
                         <Logo size={44} /> CodeArchy
                     </h1>
                     <p className="tagline">See the architecture of any codebase: packages, components, dependencies and cycles, explored from the top down on one canvas.</p>
-                    <p className="privacy">Everything runs in this browser. Your code is never uploaded.</p>
+                    <p className="privacy">Everything runs in this browser: your code is never uploaded to CodeArchy. AI is optional and off by default; turned on, it talks straight to the provider you choose, within the privacy level you set.</p>
                     {phase.kind === 'indexing' ? (
                         <div className="indexing" role="status">
                             <div className="spinner" aria-hidden />
