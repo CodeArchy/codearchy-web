@@ -4,8 +4,8 @@ import { faArrowLeft, faShieldHalved } from '@fortawesome/free-solid-svg-icons'
 import './Privacy.css'
 
 const LAST_UPDATED = '17 May 2026'
-const CONTACT_EMAIL = 'https://github.com/iyinusa/codearchy/issues'
-const GITHUB_REPO   = 'https://github.com/iyinusa/codearchy'
+const CONTACT_EMAIL = 'https://github.com/CodeArchy/codearchy/issues'
+const GITHUB_REPO   = 'https://github.com/CodeArchy/codearchy'
 
 export default function Privacy() {
   useEffect(() => {
@@ -319,7 +319,7 @@ export default function Privacy() {
               <li>
                 <strong>GitHub Issues:</strong>{' '}
                 <a href={CONTACT_EMAIL} target="_blank" rel="noopener noreferrer">
-                  github.com/iyinusa/codearchy/issues
+                  github.com/CodeArchy/codearchy/issues
                 </a>
               </li>
               <li>

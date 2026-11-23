@@ -39,23 +39,23 @@ export default function Footer() {
             <a href="https://marketplace.visualstudio.com/items?itemName=iyinusa.codearchy#qna" className="footer__link" target="_blank" rel="noopener noreferrer">
               Q&amp;A
             </a>
-            <a href="https://github.com/iyinusa/codearchy/blob/main/CHANGELOG.md" className="footer__link" target="_blank" rel="noopener noreferrer">
+            <a href="https://github.com/CodeArchy/codearchy/blob/main/CHANGELOG.md" className="footer__link" target="_blank" rel="noopener noreferrer">
               Changelog
             </a>
           </div>
 
           <div className="footer__link-group">
             <h4 className="footer__link-heading">GitHub</h4>
-            <a href="https://github.com/iyinusa/codearchy" className="footer__link" target="_blank" rel="noopener noreferrer">
+            <a href="https://github.com/CodeArchy/codearchy" className="footer__link" target="_blank" rel="noopener noreferrer">
               Repository
             </a>
-            <a href="https://github.com/iyinusa/codearchy/issues" className="footer__link" target="_blank" rel="noopener noreferrer">
+            <a href="https://github.com/CodeArchy/codearchy/issues" className="footer__link" target="_blank" rel="noopener noreferrer">
               Issues
             </a>
-            <a href="https://github.com/iyinusa/codearchy/blob/main/CONTRIBUTING.md" className="footer__link" target="_blank" rel="noopener noreferrer">
+            <a href="https://github.com/CodeArchy/codearchy/blob/main/CONTRIBUTING.md" className="footer__link" target="_blank" rel="noopener noreferrer">
               Contributing
             </a>
-            <a href="https://github.com/iyinusa/codearchy/blob/main/LICENSE" className="footer__link" target="_blank" rel="noopener noreferrer">
+            <a href="https://github.com/CodeArchy/codearchy/blob/main/LICENSE" className="footer__link" target="_blank" rel="noopener noreferrer">
               License
             </a>
           </div>
@@ -76,10 +76,10 @@ export default function Footer() {
         <div className="container footer__bottom-inner">
           <p className="footer__copy">
             © {year} CodeArchy, created by <a href="https://github.com/iyinusa" target="_blank" rel="noopener noreferrer">I. Kennedy Yinusa</a>. Released under the{' '}
-            <a href="https://github.com/iyinusa/codearchy/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>.
+            <a href="https://github.com/CodeArchy/codearchy/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>.
           </p>
           <a
-            href="https://github.com/iyinusa/codearchy"
+            href="https://github.com/CodeArchy/codearchy"
             className="footer__github-btn"
             target="_blank"
             rel="noopener noreferrer"
