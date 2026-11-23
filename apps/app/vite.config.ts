@@ -8,7 +8,7 @@ export default defineConfig({
         VitePWA({
             registerType: 'prompt',
             injectRegister: false, // registered from main.tsx (no inline script: strict CSP)
-            includeAssets: ['icon.svg'],
+            includeAssets: ['favicon-32.png', 'favicon-32-light.png', 'apple-touch-icon.png', 'brand/*.png'],
             manifest: {
                 name: 'CodeArchy',
                 short_name: 'CodeArchy',
@@ -17,10 +17,14 @@ export default defineConfig({
                 background_color: '#15171c',
                 display: 'standalone',
                 start_url: '/',
-                icons: [{ src: '/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' }],
+                icons: [
+                    { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+                    { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+                    { src: '/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+                ],
             },
             workbox: {
-                globPatterns: ['**/*.{js,css,html,svg}'],
+                globPatterns: ['**/*.{js,css,html,svg,png}'],
                 navigateFallback: '/index.html',
                 // The engine's wasm and samples are versioned by content hash: cache them on first use, forever.
                 runtimeCaching: [
