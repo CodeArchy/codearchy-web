@@ -67,7 +67,8 @@ for (const name of wanted) {
     // (connection refused; WebKit reports that as an access-control failure) and the test key is rejected (401).
     // Only those messages are tolerated. CSP violations and page errors never are.
     const expectedProbe = (t) =>
-        /Could not connect to the server|ERR_CONNECTION_REFUSED|NetworkError when attempting to fetch|status of 401/i.test(t) ||
+        // (WebKit says "Could not connect to the server." on macOS, "Could not connect to localhost: Connection refused" on Linux.)
+        /Could not connect to (the server|localhost|127\.0\.0\.1)|Connection refused|ERR_CONNECTION_REFUSED|NetworkError when attempting to fetch|status of 401/i.test(t) ||
         /Fetch API cannot load http:\/\/(localhost|127\.0\.0\.1):(11434|1234)\/.* due to access control checks/.test(t);
     // Provider checks, counted (routes see the worker's requests where the browser allows; the console where it logs them).
     let probes = 0;
