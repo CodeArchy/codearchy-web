@@ -118,8 +118,11 @@ for (const name of wanted) {
         assert.equal(probes, 0, 'no AI provider is contacted before AI is used');
         await page.getByRole('button', { name: 'AI', exact: true }).click();
         const settings = page.getByRole('dialog', { name: 'AI settings' });
+        const tab = (name) => settings.getByRole('tab', { name }).click();
         await settings.getByLabel(/Local only/).waitFor();
         assert.equal(await settings.getByLabel(/Local only/).isChecked(), true, 'local only by default');
+        await settings.getByText('No model is ready for chat yet.').waitFor(); // the banner says what's missing
+        await tab('Providers');
         const ollama = settings.locator('[data-provider="ollama"]');
         await ollama.getByText('not reachable').waitFor();
         await ollama.locator('summary').click();
@@ -129,13 +132,16 @@ for (const name of wanted) {
         const anthropic = settings.locator('[data-provider="anthropic"]');
         await anthropic.getByText(/privacy tier is local only/).waitFor();
         // The tier is the host's state: the radio flips once the worker has applied it.
+        await tab('Privacy');
         await settings.getByLabel(/^Structure Names/).click();
+        await tab('Providers');
         await anthropic.getByText('needs an API key').waitFor();
         await anthropic.getByLabel('Anthropic API key').fill(KEY);
         await anthropic.getByRole('button', { name: 'Save' }).click();
         await anthropic.getByText(/key rejected|not reachable/).waitFor();
         assert.equal(await anthropic.getByLabel('Anthropic API key').inputValue(), '', 'the field is cleared');
         assert.match(await anthropic.getByLabel('Anthropic API key').getAttribute('placeholder'), /Key saved/);
+        await anthropic.getByText('key saved').waitFor();
         await settings.getByRole('button', { name: 'Close' }).click();
 
         await node('pkg:rust').click();
@@ -149,6 +155,7 @@ for (const name of wanted) {
         await page.getByRole('button', { name: 'AI', exact: true }).click();
         await settings.getByLabel(/^Structure Names/).waitFor();
         assert.equal(await settings.getByLabel(/^Structure Names/).isChecked(), true, 'the tier persists');
+        await tab('Providers');
         assert.match(await settings.locator('[data-provider="anthropic"]').getByLabel('Anthropic API key').getAttribute('placeholder'), /Key saved/, 'the key persists');
         const leaked = await page.evaluate(
             (key) =>
