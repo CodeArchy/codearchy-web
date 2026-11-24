@@ -25,6 +25,9 @@ export default defineConfig({
             },
             workbox: {
                 globPatterns: ['**/*.{js,css,html,svg,png}'],
+                // The voice worker (kokoro-js + transformers.js) loads only once a viewer opts into the
+                // natural voice: cached on first use (below), not precached for everyone.
+                globIgnores: ['**/kokoro.worker-*.js', 'voice/**'],
                 navigateFallback: '/index.html',
                 // The engine's wasm and samples are versioned by content hash: cache them on first use, forever.
                 runtimeCaching: [
@@ -32,6 +35,12 @@ export default defineConfig({
                         urlPattern: ({ url }) => url.pathname.startsWith('/engine/'),
                         handler: 'CacheFirst',
                         options: { cacheName: 'codearchy-engine', expiration: { maxEntries: 80 } },
+                    },
+                    // The voice's worker and ONNX Runtime (the model itself is cached by transformers.js, once).
+                    {
+                        urlPattern: ({ url }) => url.pathname.startsWith('/voice/ort/') || /^\/assets\/kokoro\.worker-.*\.js$/.test(url.pathname),
+                        handler: 'CacheFirst',
+                        options: { cacheName: 'codearchy-voice-runtime', expiration: { maxEntries: 4 } },
                     },
                 ],
             },

@@ -34,11 +34,13 @@ const headers = Object.fromEntries(
 );
 assert.ok(headers['Content-Security-Policy'], 'CSP found in app-headers.conf');
 
-const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.wasm': 'application/wasm', '.json': 'application/json', '.svg': 'image/svg+xml', '.webmanifest': 'application/manifest+json' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.wasm': 'application/wasm', '.json': 'application/json', '.svg': 'image/svg+xml', '.webmanifest': 'application/manifest+json' };
 const server = http.createServer((req, res) => {
     const url = decodeURIComponent(new URL(req.url, 'http://x').pathname);
     let file = path.resolve(DIST, `.${url}`);
-    if (!file.startsWith(DIST) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) file = path.join(DIST, 'index.html'); // SPA fallback, like nginx
+    const missing = !file.startsWith(DIST) || !fs.existsSync(file) || fs.statSync(file).isDirectory();
+    if (missing && url.startsWith('/voice/')) return res.writeHead(404, headers).end(); // like nginx: the voice never gets the shell
+    if (missing) file = path.join(DIST, 'index.html'); // SPA fallback, like nginx
     res.writeHead(200, { 'Content-Type': TYPES[path.extname(file)] ?? 'application/octet-stream', 'Cache-Control': 'no-store', ...headers });
     fs.createReadStream(file).pipe(res);
 });
@@ -115,15 +117,28 @@ for (const name of wanted) {
     const started = Date.now();
     try {
         await page.goto(base);
-        await page.getByRole('button', { name: 'Try the sample' }).click();
+        // Theme: System by default; a choice is remembered and applied to the whole page.
+        assert.equal(await page.getByRole('radio', { name: 'System theme' }).getAttribute('aria-checked'), 'true');
+        await page.getByRole('radio', { name: 'Dark theme' }).click();
+        assert.equal(await page.locator('html').getAttribute('data-theme'), 'dark');
+        await page.reload();
+        assert.equal(await page.locator('html').getAttribute('data-theme'), 'dark', 'the theme persists');
+        // Opening shows what it's doing straight away (no silent wait before indexing).
+        await Promise.all([page.locator('.opening').waitFor(), page.getByRole('button', { name: /Try the sample/ }).click()]);
         await node('pkg:rust').waitFor();
+        assert.equal(await page.locator('.ca-root').getAttribute('data-theme'), 'dark', 'the Map follows the theme');
+        // In the toolbar the theme is one button that cycles: Dark → System.
+        await page.getByRole('button', { name: /^Theme: Dark/ }).click();
+        assert.equal(await page.locator('html').getAttribute('data-theme'), null);
         const status = await page.locator('.status').textContent();
         assert.match(status, new RegExp(`${GOLDEN_POLYGLOT.files.length} files`), 'golden file count');
 
         await node('pkg:.').dblclick();
         await node('dir:web/src').dblclick();
         await node('mod:web/src/index.ts').click();
-        await page.locator('.ca-inspector', { hasText: 'Depends on' }).waitFor();
+        await page.locator('.ca-inspector-tabs').getByRole('tab', { name: /^Uses/ }).click();
+        await page.locator('.ca-inspector h3', { hasText: 'Depends on' }).waitFor();
+        await page.locator('.ca-inspector-tabs').getByRole('tab', { name: 'Overview' }).click();
         await page.getByRole('button', { name: 'Open file' }).click();
         await page.locator('.viewer .cm-content', { hasText: 'export const app' }).waitFor();
         await page.getByRole('button', { name: 'Close the code viewer' }).click();
@@ -142,7 +157,7 @@ for (const name of wanted) {
 
         // Tours: Start Here plays over the canvas; a draft from "Add to tour" downloads as an anchored tour file.
         await page.click('.ca-segmented button:has-text("Tours")');
-        await page.locator('.ca-tour-card', { hasText: 'Start here' }).getByRole('button', { name: /Start|Resume|Replay/ }).click();
+        await page.locator('.ca-tour-card', { hasText: 'Start here' }).getByRole('button', { name: /^(Start|Resume|Replay)$/ }).click();
         const player = page.locator('.ca-tour-player');
         await player.locator('h3', { hasText: 'The big picture' }).waitFor();
         await player.getByRole('button', { name: 'Next' }).click();
@@ -222,8 +237,12 @@ for (const name of wanted) {
         }
         await page.locator('.disconnected', { hasText: 'Companion disconnected' }).waitFor();
 
-        await page.getByRole('button', { name: 'Open another…' }).click();
+        // "Open…" is a dialog over the current workspace, which stays until the new one is ready.
+        await page.getByRole('button', { name: 'Open…' }).click();
+        const openDialog = page.getByRole('dialog', { name: 'Open another codebase' });
+        await openDialog.getByRole('button', { name: /Open a \.zip/ }).waitFor();
         await page.locator('input[type=file][accept*=zip]').setInputFiles(zipFile);
+        await openDialog.waitFor({ state: 'detached' });
         await node('pkg:rust').waitFor();
         assert.match(await page.locator('.status').textContent(), new RegExp(`${GOLDEN_POLYGLOT.files.length} files`), 'zip: golden file count');
 
@@ -265,8 +284,23 @@ for (const name of wanted) {
         await page.getByRole('tab', { name: 'Ask' }).click();
         await page.locator('.ca-chat').getByRole('button', { name: 'Set up AI' }).waitFor();
 
+        // Voice: tours are narrated; the settings offer the natural voice (when this server serves it) and the system voice.
+        await page.getByRole('button', { name: 'Voice' }).click();
+        const voice = page.getByRole('dialog', { name: 'Voice settings' });
+        await voice.getByText('System voice').waitFor();
+        await voice.getByText('Natural voice (Kokoro)').waitFor();
+        await voice.getByRole('button', { name: 'Close' }).click();
+        await page.click('.ca-segmented button:has-text("Tours")');
+        await page.locator('.ca-tour-card', { hasText: 'Start here' }).getByRole('button', { name: /^(Start|Resume|Replay)$/ }).click();
+        const narrate = page.locator('.ca-narration').getByRole('button', { name: /Narrat/ });
+        assert.equal(await narrate.getAttribute('aria-pressed'), 'true', 'narration is on by default');
+        await narrate.click();
+        assert.equal(await narrate.getAttribute('aria-pressed'), 'false');
+        await page.locator('.ca-tour-player').getByRole('button', { name: 'Close the tour' }).click();
+        await page.click('.ca-segmented button:has-text("Map")');
+
         await page.reload();
-        await page.getByRole('button', { name: 'Try the sample' }).click();
+        await page.getByRole('button', { name: /Try the sample/ }).click();
         await node('pkg:rust').waitFor();
         await page.getByRole('button', { name: 'AI', exact: true }).click();
         await settings.getByLabel(/^Structure Names/).waitFor();

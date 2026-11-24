@@ -59,3 +59,7 @@ jobs:
           curl -fs -H "Host: codearchy.com" http://127.0.0.1:8080/ | grep -q '<div id="root">'
           curl -fsI -H "Host: app.codearchy.com" http://127.0.0.1:8080/ | grep -qi "content-security-policy: default-src 'self'"
           curl -fsI -H "Host: app.codearchy.com" http://127.0.0.1:8080/sw.js | grep -qi "cache-control: no-cache"
+          # The narration voice is served by the app itself; a missing voice file is a 404, never the app shell.
+          curl -fs -H "Host: app.codearchy.com" http://127.0.0.1:8080/voice/1939ad2a/config.json | grep -q '"model_type"'
+          curl -fsI -H "Host: app.codearchy.com" http://127.0.0.1:8080/voice/ort/ort-wasm-simd-threaded.jsep.mjs | grep -qi "content-type: text/javascript"
+          test "$(curl -s -o /dev/null -w '%{http_code}' -H 'Host: app.codearchy.com' http://127.0.0.1:8080/voice/nope.bin)" = 404

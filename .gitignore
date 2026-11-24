@@ -27,4 +27,6 @@ npm-debug.log*
 
 # Engine assets copied at build time (apps/app/scripts/assets.mjs)
 apps/app/public/engine/
+# The narration voice (apps/app/scripts/voice-model.mjs)
+apps/app/public/voice/
 apps/app/src/generated/
