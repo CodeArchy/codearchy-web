@@ -15,6 +15,7 @@ import { CompanionEngine, parsePairing, type CompanionTarget } from '@codearchy/
 import { WorkerEngine, canPickDirectory, pickDirectory, sourceFromDrop, sourceFromFileList, sourceFromZip, type EngineSource } from '@codearchy/platform-browser/client';
 import { workerAiClient } from './ai/client';
 import { CodeViewer } from './CodeViewer';
+import { BranchReportDialog } from './BranchReport';
 import { ENGINE_BASE } from './generated/engine';
 
 type Phase = { kind: 'landing' } | { kind: 'indexing'; label: string; progress?: string } | { kind: 'ready' };
@@ -72,6 +73,7 @@ export function App() {
     const [companion, setCompanion] = useState<{ engine: CompanionEngine; target: CompanionTarget; version: string }>();
     const [disconnected, setDisconnected] = useState<string>();
     const [pairLink, setPairLink] = useState('');
+    const [reportOpen, setReportOpen] = useState(false);
     const client: EngineClient & { readFile(path: string): Promise<string | undefined> } = companion?.engine ?? engine;
     const [phase, setPhase] = useState<Phase>({ kind: 'landing' });
     const [summary, setSummary] = useState<WorkspaceSummary>();
@@ -286,12 +288,18 @@ export function App() {
                                         </button>
                                     </span>
                                 ) : null}
+                                {companion ? (
+                                    <button type="button" className="ca-search-button" title="What this branch adds, and who wrote it" onClick={() => setReportOpen(true)}>
+                                        Branch report
+                                    </button>
+                                ) : null}
                                 <button type="button" className="ca-search-button" onClick={() => setPhase({ kind: 'landing' })}>
                                     Open another…
                                 </button>
                             </>
                         }
                     />
+                    {reportOpen && companion ? <BranchReportDialog engine={companion.engine} onClose={() => setReportOpen(false)} /> : null}
                     {viewer ? <CodeViewer {...viewer} dark={dark} onClose={() => setViewer(undefined)} authorship={viewerAuthorship} /> : null}
                 </div>
             ) : (

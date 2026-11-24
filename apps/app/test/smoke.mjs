@@ -203,6 +203,17 @@ for (const name of wanted) {
             await page.getByRole('button', { name: 'Close the code viewer' }).click();
             await page.selectOption('.ca-lens select', 'dependencies');
 
+            // The branch report through the Companion (the fixture is at HEAD: nothing added).
+            await page.getByRole('button', { name: 'Branch report' }).click();
+            const report = page.getByRole('dialog', { name: 'Branch authorship report' });
+            await report.getByLabel('Compare with').fill('HEAD');
+            await report.getByRole('button', { name: 'Generate' }).click();
+            await report.getByLabel('Report (Markdown)').filter({ hasText: 'Authorship: this branch vs `HEAD`' }).waitFor();
+            await report.getByLabel('Compare with').fill('--output=/tmp/x');
+            await report.getByRole('button', { name: 'Generate' }).click();
+            await report.getByRole('alert').filter({ hasText: 'branch, tag or commit' }).waitFor();
+            await report.getByRole('button', { name: 'Close the report' }).click();
+
             await page.reload();
             await page.locator('.companion-badge').waitFor(); // resumed with the tab's session
             await node('pkg:rust').waitFor();
