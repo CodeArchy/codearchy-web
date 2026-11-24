@@ -143,6 +143,12 @@ for (const name of wanted) {
         await page.locator('.viewer .cm-content', { hasText: 'export const app' }).waitFor();
         await page.getByRole('button', { name: 'Close the code viewer' }).click();
 
+        // Architecture: a tab beside the Map, the system in layers (built from the code until AI designs it).
+        await page.click('.ca-segmented button:has-text("Architecture")');
+        await page.locator('.ca-arch-head h2').waitFor();
+        assert.ok((await page.locator('.ca-arch-part').count()) >= 2, 'main parts drawn');
+        await page.getByRole('button', { name: 'Design with AI' }).waitFor();
+        await page.click('.ca-segmented button:has-text("Map")');
         // Flows: the sample's Go main, its trace, a step in the Inspector, the declaration in the viewer, back to the Map.
         await page.click('.ca-segmented button:has-text("Flows")');
         await page.locator('.ca-flow-item', { hasText: 'main' }).first().click();

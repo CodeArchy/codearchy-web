@@ -47,5 +47,10 @@ export function workerAiClient(engine: WorkerEngine): AiClient {
             return () => listeners.delete(listener);
         },
         audit: () => call('audit'),
+        localModels: (provider) => call('localModels', { provider }),
+        pullModel: (provider, model) => call('pullModel', { provider, model }),
+        cancelPull: (provider, model) => void call('cancelPull', { provider, model }),
+        deleteModel: (provider, model) => call('deleteModel', { provider, model }),
+        describeArchitecture: (options) => call('describeArchitecture', { generate: options?.generate === true }),
     };
 }
