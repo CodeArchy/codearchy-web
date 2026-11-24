@@ -30,6 +30,8 @@ RUN node scripts/codearchy.mjs fetch
 COPY apps/app/package.json ./apps/app/
 RUN pnpm install --frozen-lockfile
 COPY apps/app ./apps/app
+# The narration voice (Kokoro-82M, ~107 MB, pinned and sha256-verified): served by the app itself.
+RUN pnpm --filter @codearchy/app voice
 RUN pnpm build:app
 
 # ── Production: nginx serving both ────────────────────────────
