@@ -9,6 +9,7 @@
  */
 import type { KokoroState, SpeakOptions, VoiceClient, VoiceEngineInfo, VoiceOption, VoiceState } from '@codearchy/ui';
 import manifest from './model.json';
+import { VOICE_SERVED } from '../generated/voice';
 
 const REV = manifest.revision.slice(0, 8);
 const MODEL_BASE = `/voice/${REV}/`;
@@ -53,8 +54,9 @@ function save(s: Saved): void {
 export function webVoiceClient(): VoiceClient {
     const synth = typeof speechSynthesis !== 'undefined' ? speechSynthesis : undefined;
     let saved = load();
-    let kokoro: KokoroState = { status: 'idle', downloadBytes: DOWNLOAD_BYTES };
-    let served: boolean | undefined;
+    /** Known at build time: this server has the voice model (no probing for a file that may 404). */
+    const served = VOICE_SERVED;
+    let kokoro: KokoroState = served ? { status: 'idle', downloadBytes: DOWNLOAD_BYTES } : { status: 'unavailable', error: 'Not served here' };
     let speaking = false;
     let preparing = false;
     let state: VoiceState;
@@ -71,8 +73,8 @@ export function webVoiceClient(): VoiceClient {
                 id: 'kokoro',
                 label: 'Natural voice (Kokoro)',
                 description: 'A neural voice that runs on this device. Downloaded once from this app, then works offline.',
-                available: served !== false,
-                ...(served === false ? { reason: 'This server doesn’t serve the voice model (run `pnpm voice` in development).' } : {}),
+                available: served,
+                ...(!served ? { reason: 'This server doesn’t serve the voice model (run `pnpm voice` in development).' } : {}),
             },
             { id: 'system', label: 'System voice', description: 'Your browser’s and operating system’s voices. Instant, no download.', available: !!synth, ...(synth ? {} : { reason: 'Speech synthesis isn’t available in this browser.' }) },
         ];
@@ -94,22 +96,13 @@ export function webVoiceClient(): VoiceClient {
     state = compute();
     if (synth) synth.addEventListener?.('voiceschanged', emit);
 
-    // Is the model served here, and already in this browser's cache?
-    void fetch(`${MODEL_BASE}config.json`, { method: 'HEAD', cache: 'no-store' }).then(
-        (r) => {
-            served = r.ok && !(r.headers.get('content-type') ?? '').includes('text/html');
-            if (!served) kokoro = { status: 'unavailable', error: 'Not served here' };
-            emit();
-        },
-        () => ((served = false), (kokoro = { status: 'unavailable', error: 'Not served here' }), emit())
-    );
 
     // ── Kokoro worker ──────────────────────────────────────────────────────
     let worker: Worker | undefined;
     let ready: Promise<void> | undefined;
     const prepare = (): Promise<void> => {
         if (ready) return ready;
-        if (served === false) return Promise.reject(new Error('The voice model is not served here'));
+        if (!served) return Promise.reject(new Error('The voice model is not served here'));
         kokoro = { ...kokoro, status: kokoro.cached ? 'loading' : 'downloading', progress: 0 };
         emit();
         ready = new Promise<void>((resolve, reject) => {
@@ -220,6 +213,7 @@ export function webVoiceClient(): VoiceClient {
     // Already in this browser's cache? Then it loads (no download) when it's the chosen voice.
     void (async () => {
         try {
+            if (!served) return;
             const cached = !!(await (await caches.open('transformers-cache')).match(HF_MODEL));
             if (cached && kokoro.status === 'idle') {
                 kokoro = { ...kokoro, cached: true };
