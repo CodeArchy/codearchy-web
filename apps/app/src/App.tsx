@@ -10,7 +10,7 @@
  */
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type DragEvent } from 'react';
 import { CodeArchyMap } from '@codearchy/ui';
-import type { EngineClient, WorkspaceSummary } from '@codearchy/protocol';
+import type { AuthorshipOrigin, AuthorshipRange, EngineClient, WorkspaceSummary } from '@codearchy/protocol';
 import { CompanionEngine, parsePairing, type CompanionTarget } from '@codearchy/platform-browser/companion';
 import { WorkerEngine, canPickDirectory, pickDirectory, sourceFromDrop, sourceFromFileList, sourceFromZip, type EngineSource } from '@codearchy/platform-browser/client';
 import { workerAiClient } from './ai/client';
@@ -211,6 +211,29 @@ export function App() {
         if (text !== undefined) setViewer({ path, line, text });
     };
 
+    // With the Companion, the viewer shows the file's authorship (and lets you review / correct it).
+    const [viewerRanges, setViewerRanges] = useState<AuthorshipRange[]>();
+    useEffect(() => {
+        let live = true;
+        setViewerRanges(undefined);
+        if (companion && viewer) void companion.engine.authorship(`mod:${viewer.path}`).then((a) => live && setViewerRanges(a?.ranges ?? []), () => undefined);
+        return () => {
+            live = false;
+        };
+    }, [companion, viewer?.path, dataVersion]); // eslint-disable-line react-hooks/exhaustive-deps
+    const viewerAuthorship =
+        companion && viewer && viewerRanges
+            ? {
+                  ranges: viewerRanges,
+                  mark: async (start: number, end: number, as: 'reviewed' | AuthorshipOrigin) => {
+                      const result = await companion.engine.authorshipMark(viewer.path, start, end, as);
+                      const a = await companion.engine.authorship(`mod:${viewer.path}`);
+                      setViewerRanges(a?.ranges ?? []);
+                      return result;
+                  },
+              }
+            : undefined;
+
     return (
         <div
             className={`app${dragging ? ' app-dragging' : ''}`}
@@ -269,7 +292,7 @@ export function App() {
                             </>
                         }
                     />
-                    {viewer ? <CodeViewer {...viewer} dark={dark} onClose={() => setViewer(undefined)} /> : null}
+                    {viewer ? <CodeViewer {...viewer} dark={dark} onClose={() => setViewer(undefined)} authorship={viewerAuthorship} /> : null}
                 </div>
             ) : (
                 <main className="landing">
