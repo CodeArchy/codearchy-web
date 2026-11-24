@@ -106,6 +106,18 @@ for (const name of wanted) {
         await page.locator('.viewer .cm-content', { hasText: 'export const app' }).waitFor();
         await page.getByRole('button', { name: 'Close the code viewer' }).click();
 
+        // Flows: the sample's Go main, its trace, a step in the Inspector, the declaration in the viewer, back to the Map.
+        await page.click('.ca-segmented button:has-text("Flows")');
+        await page.locator('.ca-flow-item', { hasText: 'main' }).first().click();
+        await page.locator('.ca-flow-head h2', { hasText: 'main' }).waitFor();
+        await page.locator('.ca-step-main', { hasText: 'main' }).first().click();
+        await page.locator('.ca-inspector[data-key="mod:go/cmd/server/main.go"]').waitFor();
+        await page.getByRole('button', { name: 'Open declaration' }).click();
+        await page.locator('.viewer .cm-content', { hasText: 'func main' }).waitFor();
+        await page.getByRole('button', { name: 'Close the code viewer' }).click();
+        await page.getByRole('button', { name: 'Show on map' }).click();
+        await node('mod:go/cmd/server/main.go').waitFor();
+
         await page.getByRole('button', { name: 'Open another…' }).click();
         await page.locator('input[type=file][accept*=zip]').setInputFiles(zipFile);
         await node('pkg:rust').waitFor();
