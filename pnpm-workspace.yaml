@@ -8,6 +8,8 @@ packages:
   - apps/app
   - .codearchy/packages/*
   - .codearchy/packages/languages/*
+  # The CLI, for the smoke test's real Companion (`codearchy serve`); never bundled into the app.
+  - .codearchy/apps/cli
 
 onlyBuiltDependencies:
   - esbuild

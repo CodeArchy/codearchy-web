@@ -5,7 +5,9 @@
  * (parsed from app-headers.conf, so the CSP under test is the real one):
  *
  *   landing → the sample (golden numbers) → Map: drill, select, Inspector →
- *   "Open file" → CodeMirror shows the file → a .zip through the file input
+ *   "Open file" → CodeMirror shows the file → Flows → Tours → the Companion
+ *   (a real `codearchy serve`: pair from its link, browse, reload resumes,
+ *   stopping it shows "disconnected") → a .zip through the file input
  *   — with no CSP violations or page errors.
  *
  *   pnpm --filter @codearchy/app build && pnpm --filter @codearchy/app test:e2e [-- chromium,firefox,webkit]
@@ -16,6 +18,7 @@ import * as fs from 'node:fs';
 import * as http from 'node:http';
 import * as os from 'node:os';
 import * as path from 'node:path';
+import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { chromium, firefox, webkit } from 'playwright';
 import { zipSync } from 'fflate';
@@ -49,6 +52,23 @@ const samplePath = fs.readdirSync(path.join(DIST, 'engine')).map((v) => path.joi
 const sample = JSON.parse(fs.readFileSync(samplePath, 'utf8'));
 const zipFile = path.join(os.tmpdir(), 'codearchy-sample.zip');
 fs.writeFileSync(zipFile, zipSync(Object.fromEntries(Object.entries(sample).map(([p, t]) => [`polyglot-main/${p}`, new TextEncoder().encode(t)]))));
+
+/** A real Companion (`codearchy serve`) on the polyglot fixture; resolves with its pairing link. */
+const CLI = path.resolve(APP, '..', '..', '.codearchy', 'apps', 'cli', 'dist', 'main.js');
+const FIXTURE = path.resolve(APP, '..', '..', '.codearchy', 'fixtures', 'polyglot');
+function startCompanion() {
+    const proc = spawn(process.execPath, [CLI, 'serve', '--root', FIXTURE, '--app', new URL(base).origin], { stdio: ['ignore', 'pipe', 'pipe'] });
+    let out = '';
+    const link = new Promise((resolve, reject) => {
+        proc.stdout.on('data', (d) => {
+            out += d;
+            const m = /(https?:\/\/\S+#pair=\S+)/.exec(out);
+            if (m) resolve(m[1]);
+        });
+        proc.on('exit', (code) => reject(new Error(`codearchy serve exited (${code})`)));
+    });
+    return { link, stop: () => proc.kill('SIGTERM') };
+}
 
 const engines = { chromium, firefox, webkit };
 const wanted = (process.argv[2] ?? 'chromium,firefox,webkit').split(',');
@@ -143,6 +163,24 @@ for (const name of wanted) {
         assert.ok(tourFile.steps[0].anchorHash, 'the engine worker anchors the step');
         await draft.getByRole('button', { name: 'Discard' }).click();
         await page.click('.ca-segmented button:has-text("Map")');
+
+        // The Companion: a real `codearchy serve`. Its link opens the app connected; a reload resumes the
+        // session; stopping it says so. (The page still goes through the CSP's connect-src.)
+        const companion = startCompanion();
+        try {
+            await page.goto(await companion.link);
+            await page.locator('.companion-badge').waitFor();
+            await node('pkg:rust').waitFor();
+            assert.doesNotMatch(page.url(), /pair=/, 'the token leaves the address bar');
+            await page.click('.ca-segmented button:has-text("Flows")');
+            await page.locator('.ca-flow-item', { hasText: 'main' }).first().waitFor();
+            await page.reload();
+            await page.locator('.companion-badge').waitFor(); // resumed with the tab's session
+            await node('pkg:rust').waitFor();
+        } finally {
+            companion.stop();
+        }
+        await page.locator('.disconnected', { hasText: 'Companion disconnected' }).waitFor();
 
         await page.getByRole('button', { name: 'Open another…' }).click();
         await page.locator('input[type=file][accept*=zip]').setInputFiles(zipFile);

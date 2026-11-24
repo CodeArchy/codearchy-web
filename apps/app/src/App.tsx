@@ -2,16 +2,42 @@
  * The CodeArchy web app: open a folder, a .zip or the sample; the engine
  * indexes it in this browser (nothing is uploaded) and the Map shows its
  * architecture. A picked folder stays live: edits on disk show up in place.
+ *
+ * With the Companion (`codearchy serve`), the engine runs natively on this
+ * machine instead: its pairing link (`#pair=<token>@127.0.0.1:<port>`) opens
+ * the app connected, and the session is kept for this tab so a reload
+ * reconnects without a new link.
  */
 import { useEffect, useMemo, useRef, useState, type ChangeEvent, type DragEvent } from 'react';
 import { CodeArchyMap } from '@codearchy/ui';
-import type { WorkspaceSummary } from '@codearchy/protocol';
+import type { EngineClient, WorkspaceSummary } from '@codearchy/protocol';
+import { CompanionEngine, parsePairing, type CompanionTarget } from '@codearchy/platform-browser/companion';
 import { WorkerEngine, canPickDirectory, pickDirectory, sourceFromDrop, sourceFromFileList, sourceFromZip, type EngineSource } from '@codearchy/platform-browser/client';
 import { workerAiClient } from './ai/client';
 import { CodeViewer } from './CodeViewer';
 import { ENGINE_BASE } from './generated/engine';
 
 type Phase = { kind: 'landing' } | { kind: 'indexing'; label: string; progress?: string } | { kind: 'ready' };
+
+/** The Companion session for this tab (sessionStorage: it ends with the tab). */
+const COMPANION_KEY = 'codearchy.companion';
+type SavedCompanion = CompanionTarget & { session: string };
+function savedCompanion(): SavedCompanion | undefined {
+    try {
+        const raw = JSON.parse(sessionStorage.getItem(COMPANION_KEY) ?? 'null') as SavedCompanion | null;
+        return raw && typeof raw.session === 'string' && (raw.host === '127.0.0.1' || raw.host === 'localhost') && Number.isInteger(raw.port) ? raw : undefined;
+    } catch {
+        return undefined;
+    }
+}
+function saveCompanion(c: SavedCompanion | undefined): void {
+    try {
+        if (c) sessionStorage.setItem(COMPANION_KEY, JSON.stringify(c));
+        else sessionStorage.removeItem(COMPANION_KEY);
+    } catch {
+        // storage blocked: a reload will just need a new link
+    }
+}
 interface Viewer {
     path: string;
     line?: number;
@@ -42,6 +68,11 @@ function useDarkMode(): boolean {
 export function App() {
     const engine = useMemo(() => new WorkerEngine(new Worker(new URL('./engine.worker.ts', import.meta.url), { type: 'module' })), []);
     const ai = useMemo(() => workerAiClient(engine), [engine]);
+    /** Set while connected to `codearchy serve`; the in-browser engine is used otherwise. */
+    const [companion, setCompanion] = useState<{ engine: CompanionEngine; target: CompanionTarget; version: string }>();
+    const [disconnected, setDisconnected] = useState<string>();
+    const [pairLink, setPairLink] = useState('');
+    const client: EngineClient & { readFile(path: string): Promise<string | undefined> } = companion?.engine ?? engine;
     const [phase, setPhase] = useState<Phase>({ kind: 'landing' });
     const [summary, setSummary] = useState<WorkspaceSummary>();
     const [error, setError] = useState<string>();
@@ -68,8 +99,70 @@ export function App() {
         [engine]
     );
 
+    const connectCompanion = async (target: CompanionTarget, auth: { token: string } | { session: string }) => {
+        setError(undefined);
+        setNotice(undefined);
+        setViewer(undefined);
+        setDisconnected(undefined);
+        setPhase({ kind: 'indexing', label: `the Companion on port ${target.port}` });
+        try {
+            const c = await CompanionEngine.connect(target, auth);
+            saveCompanion({ ...target, session: c.session });
+            c.engine.onEvent((e) => {
+                if (e.type !== 'changed') return;
+                setSummary(e.summary);
+                setDataVersion((v) => v + 1);
+                setNotice(`${e.paths.length} file${e.paths.length === 1 ? '' : 's'} changed on disk`);
+            });
+            c.engine.onClose((err) => setDisconnected(err.message));
+            companion?.engine.dispose();
+            setCompanion({ engine: c.engine, target, version: c.version });
+            setSummary(c.summary);
+            setRevision((r) => r + 1);
+            setPhase({ kind: 'ready' });
+        } catch (err) {
+            if ('session' in auth) saveCompanion(undefined);
+            setError((err as Error).message);
+            setPhase({ kind: 'landing' });
+        }
+    };
+    const leaveCompanion = () => {
+        companion?.engine.dispose();
+        setCompanion(undefined);
+        setDisconnected(undefined);
+        saveCompanion(undefined);
+    };
+
+    // A pairing link opens the app connected (the token is dropped from the address bar), also
+    // when it's opened in a tab that already shows the app; otherwise this tab's session reconnects.
+    useEffect(() => {
+        const pairFromHash = () => {
+            const pairing = parsePairing(location.hash);
+            if (!pairing) return false;
+            history.replaceState(null, '', location.pathname + location.search);
+            void connectCompanion({ host: pairing.host, port: pairing.port }, { token: pairing.token });
+            return true;
+        };
+        if (!pairFromHash()) {
+            const saved = savedCompanion();
+            if (saved) void connectCompanion({ host: saved.host, port: saved.port }, { session: saved.session });
+        }
+        const onHash = () => void pairFromHash();
+        window.addEventListener('hashchange', onHash);
+        return () => window.removeEventListener('hashchange', onHash);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const pastePairing = () => {
+        const hash = pairLink.trim().includes('#') ? pairLink.trim().slice(pairLink.trim().indexOf('#')) : pairLink.trim();
+        const pairing = parsePairing(hash);
+        if (!pairing) return setError('That is not a Companion link: run `codearchy serve` and copy the link it prints.');
+        setPairLink('');
+        void connectCompanion({ host: pairing.host, port: pairing.port }, { token: pairing.token });
+    };
+
     const open = async (source: EngineSource | undefined, label: string) => {
         if (!source) return;
+        leaveCompanion();
         setError(undefined);
         setNotice(undefined);
         setViewer(undefined);
@@ -114,7 +207,7 @@ export function App() {
     };
 
     const openFile = async (path: string, line?: number) => {
-        const text = await engine.readFile(path);
+        const text = await client.readFile(path);
         if (text !== undefined) setViewer({ path, line, text });
     };
 
@@ -134,13 +227,14 @@ export function App() {
             {phase.kind === 'ready' && summary ? (
                 <div className="workspace">
                     <CodeArchyMap
-                        client={engine}
+                        client={client}
                         host={{ openFile: (p, l) => void openFile(p, l) }}
                         layoutWorkerUrl={`${ENGINE_BASE}elk-worker.js`}
                         hostKind="web"
                         revision={String(revision)}
                         dataVersion={dataVersion}
-                        ai={ai}
+                        // AI runs beside the in-browser engine; with the Companion it comes in a later release.
+                        ai={companion ? undefined : ai}
                         toolbarStart={
                             <button type="button" className="brand" title="CodeArchy: open another codebase" onClick={() => setPhase({ kind: 'landing' })}>
                                 <Logo size={20} />
@@ -149,9 +243,26 @@ export function App() {
                         }
                         toolbarExtras={
                             <>
-                                <span className="status" title={`${summary.files.toLocaleString()} files · ${summary.edges.toLocaleString()} dependencies · index in ${summary.storage === 'opfs' ? 'browser storage' : 'memory'}`}>
-                                    {summary.live ? <span className="live" aria-label="watching for changes">● live</span> : null} {notice ?? `${summary.files.toLocaleString()} files`}
+                                <span
+                                    className="status"
+                                    title={`${summary.files.toLocaleString()} files · ${summary.edges.toLocaleString()} dependencies · ${
+                                        summary.storage === 'native' ? `indexed by the Companion (codearchy ${companion?.version ?? ''}) on this machine` : `index in ${summary.storage === 'opfs' ? 'browser storage' : 'memory'}`
+                                    }`}
+                                >
+                                    {companion ? <span className="companion-badge">Companion</span> : null}
+                                    {summary.live && !disconnected ? <span className="live" aria-label="watching for changes">● live</span> : null} {notice ?? `${summary.files.toLocaleString()} files`}
                                 </span>
+                                {disconnected && companion ? (
+                                    <span className="disconnected" role="alert" title={disconnected}>
+                                        Companion disconnected{' '}
+                                        <button type="button" className="link" onClick={() => {
+                                            const saved = savedCompanion();
+                                            if (saved) void connectCompanion({ host: saved.host, port: saved.port }, { session: saved.session });
+                                        }}>
+                                            Reconnect
+                                        </button>
+                                    </span>
+                                ) : null}
                                 <button type="button" className="ca-search-button" onClick={() => setPhase({ kind: 'landing' })}>
                                     Open another…
                                 </button>
@@ -191,6 +302,29 @@ export function App() {
                             ) : (
                                 <p className="muted">In this browser a folder is read once; Chromium-based browsers can also follow your edits live.</p>
                             )}
+                            <section className="companion" aria-label="Connect to the Companion">
+                                <h2>Big repository? Connect to the Companion</h2>
+                                <p className="muted">
+                                    Run <code>codearchy serve --root /path/to/repo</code> (the{' '}
+                                    <a href="https://github.com/CodeArchy/codearchy/blob/main/docs/guides/companion.md" rel="noopener noreferrer">
+                                        CodeArchy CLI
+                                    </a>
+                                    ) and open the link it prints. The engine then runs natively on this machine (live updates in any browser, no size limit), and this
+                                    page talks to it directly. Only this machine can connect.
+                                </p>
+                                <form
+                                    className="pair"
+                                    onSubmit={(e) => {
+                                        e.preventDefault();
+                                        pastePairing();
+                                    }}
+                                >
+                                    <input aria-label="Companion link" placeholder="…or paste the link here" value={pairLink} onChange={(e) => setPairLink(e.target.value)} />
+                                    <button type="submit" disabled={!pairLink.trim()}>
+                                        Connect
+                                    </button>
+                                </form>
+                            </section>
                             {summary ? (
                                 <p>
                                     <button type="button" className="link" onClick={() => setPhase({ kind: 'ready' })}>

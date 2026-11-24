@@ -62,3 +62,13 @@ a { color: var(--accent); }
 
 .logo { display: block; }
 .brand { display: inline-flex; align-items: center; gap: 6px; background: none; border: 0; padding: 0 6px 0 0; margin-right: 4px; color: inherit; font: 600 13px/1 system-ui, -apple-system, "Segoe UI", sans-serif; cursor: pointer; border-right: 1px solid var(--line); }
+
+/* The Companion */
+.companion { margin-top: 18px; padding: 14px 16px; border: 1px solid var(--line, #d9dde5); border-radius: 12px; max-width: 640px; text-align: left; }
+.companion h2 { margin: 0 0 6px; font-size: 15px; }
+.companion p { margin: 0 0 10px; line-height: 1.5; }
+.companion code { font-size: 12px; }
+.pair { display: flex; gap: 8px; }
+.pair input { flex: 1; min-width: 0; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line, #d9dde5); font: inherit; background: transparent; color: inherit; }
+.companion-badge { font-size: 11px; font-weight: 600; padding: 1px 6px; margin-right: 6px; border-radius: 8px; background: color-mix(in srgb, #2f9e6e 18%, transparent); color: #2f9e6e; }
+.disconnected { font-size: 12px; color: #d03b3b; }
