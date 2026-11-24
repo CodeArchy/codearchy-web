@@ -10,7 +10,7 @@
  * Every call goes straight from this browser to the provider: no CodeArchy
  * server sees code or keys. The CSP's connect-src lists exactly these hosts.
  */
-import { AiHost, type AiHostOptions, type Card, type CardStore, type ProviderFactory } from '@codearchy/ai';
+import { AiHost, type AiHostOptions, type Card, type CardStore, type ProviderFactory, type StoredDesign } from '@codearchy/ai';
 import type { AiHostEvent } from '@codearchy/protocol';
 import { anthropic, gemini, groq, lmStudio, mistral, ollama, openai, openrouter, type UsageStore } from '@codearchy/providers';
 import { IdbKeyValue, IdbSecretStore } from '@codearchy/platform-browser/stores';
@@ -71,6 +71,8 @@ export function createBrowserAiHost(options: BrowserAiHostOptions): AiHost {
         settings: { load: () => kv.get('settings'), save: (s) => kv.set('settings', s) },
         usage,
         cards: new IdbCardStore(kv),
+        // The architect model's system design, per workspace (kept across reloads).
+        designs: { load: (key) => kv.get<StoredDesign>(`architecture:${key}`), save: (key, design) => kv.set(`architecture:${key}`, design) },
         emit: options.emit,
     });
 }

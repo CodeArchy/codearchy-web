@@ -1,5 +1,5 @@
 {
-    "$comment": "Kokoro-82M at a pinned commit, sha256-verified (the same pins as the VS Code extension, apps/vscode/src/voice/VoiceModelStore.ts in codearchy). scripts/voice-model.mjs downloads these into public/voice/ for the app to serve itself.",
+    "$comment": "Kokoro-82M at a pinned commit, sha256-verified (the same pins as the VS Code extension, apps/vscode/src/voice/VoiceModelStore.ts in codearchy). scripts/voice-model.mjs downloads these into public/voice/ for the app to serve itself. `gpu` files are used with WebGPU (about 1.5x faster than speech); the others on the CPU.",
     "repository": "onnx-community/Kokoro-82M-v1.0-ONNX",
     "revision": "1939ad2a8e416c0acfeecc08a694d14ef25f2231",
     "files": {
@@ -130,6 +130,11 @@
         "voices/bm_lewis.bin": {
             "size": 522240,
             "sha256": "b8f671cef828c30e66fdf0b0756a76bba58f6bb3398cbbf27058642acbcedb97"
+        },
+        "onnx/model.onnx": {
+            "size": 325532232,
+            "sha256": "8fbea51ea711f2af382e88c833d9e288c6dc82ce5e98421ea61c058ce21a34cb",
+            "gpu": true
         }
     }
 }
