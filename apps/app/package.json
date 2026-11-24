@@ -34,6 +34,7 @@
         "workbox-window": "7.4.1"
     },
     "devDependencies": {
+        "@codearchy/cli": "workspace:*",
         "@codearchy/conformance": "workspace:*",
         "@codearchy/grammars": "workspace:*",
         "@codearchy/treesitter": "workspace:*",
