@@ -19,6 +19,7 @@ function aiHost(): Promise<AiHost> {
     host ??= import('./host').then(({ createBrowserAiHost }) =>
         createBrowserAiHost({
             index: () => workspace?.hierarchy,
+            flows: () => workspace?.flows,
             readFile: async (path) => {
                 if (!workspace) return undefined;
                 try {

@@ -17,6 +17,8 @@ import { IdbKeyValue, IdbSecretStore } from '@codearchy/platform-browser/stores'
 
 export interface BrowserAiHostOptions {
     index: AiHostOptions['index'];
+    /** Entrypoints and flows for the open workspace (chat's find_flows). */
+    flows: NonNullable<AiHostOptions['flows']>;
     readFile(path: string): Promise<string | undefined>;
     emit(event: AiHostEvent): void;
 }
@@ -62,6 +64,7 @@ export function createBrowserAiHost(options: BrowserAiHostOptions): AiHost {
     ];
     return new AiHost({
         index: options.index,
+        flows: options.flows,
         readFile: options.readFile,
         providers,
         secrets: new IdbSecretStore(kv),
