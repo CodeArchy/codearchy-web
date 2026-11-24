@@ -57,7 +57,9 @@ fs.writeFileSync(zipFile, zipSync(Object.fromEntries(Object.entries(sample).map(
 const CLI = path.resolve(APP, '..', '..', '.codearchy', 'apps', 'cli', 'dist', 'main.js');
 const FIXTURE = path.resolve(APP, '..', '..', '.codearchy', 'fixtures', 'polyglot');
 function startCompanion() {
-    const proc = spawn(process.execPath, [CLI, 'serve', '--root', FIXTURE, '--app', new URL(base).origin], { stdio: ['ignore', 'pipe', 'pipe'] });
+    // A throwaway HOME: the Companion keeps its authorship ledger there, not in the real home folder.
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), 'codearchy-companion-home-'));
+    const proc = spawn(process.execPath, [CLI, 'serve', '--root', FIXTURE, '--app', new URL(base).origin], { stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, HOME: home, USERPROFILE: home } });
     let out = '';
     const link = new Promise((resolve, reject) => {
         proc.stdout.on('data', (d) => {
@@ -174,6 +176,33 @@ for (const name of wanted) {
             assert.doesNotMatch(page.url(), /pair=/, 'the token leaves the address bar');
             await page.click('.ca-segmented button:has-text("Flows")');
             await page.locator('.ca-flow-item', { hasText: 'main' }).first().waitFor();
+
+            // Authorship through the Companion: the lens, then the code viewer's gutter, review and correction.
+            await page.click('.ca-segmented button:has-text("Map")');
+            await page.locator('.ca-lens select option[value="authorship"]').waitFor({ state: 'attached' });
+            await page.selectOption('.ca-lens select', 'authorship');
+            await node('pkg:rust').locator('.ca-lens-badge').waitFor();
+            await page.locator('.ca-root').focus();
+            await page.keyboard.press('Control+k');
+            await page.locator('.ca-search input').fill('billing');
+            await page.locator('.ca-search li', { hasText: 'billing.rb' }).first().click();
+            await page.locator('.ca-inspector[data-key="mod:rb/lib/billing.rb"]').getByRole('button', { name: 'Open file' }).click();
+            const viewer = page.locator('.viewer');
+            await viewer.locator('.viewer-authorship').waitFor();
+            const lines = viewer.locator('.cm-line');
+            await lines.nth(0).click();
+            await lines.nth(1).click({ modifiers: ['Shift'] });
+            await viewer.locator('.viewer-authorship .sel', { hasText: 'Lines 1–2' }).waitFor();
+            await viewer.getByLabel('Correct authorship of the selected lines').selectOption('ai');
+            await viewer.locator('.cm-authorship-ai').first().waitFor();
+            await viewer.getByRole('button', { name: 'Mark as reviewed' }).click();
+            await viewer.locator('.cm-authorship-reviewed').first().waitFor();
+            await viewer.getByRole('status').filter({ hasText: 'Marked 2 lines as reviewed' }).waitFor();
+            await viewer.getByLabel('Correct authorship of the selected lines').selectOption('unknown');
+            await viewer.locator('.cm-authorship-reviewed').first().waitFor({ state: 'detached' });
+            await page.getByRole('button', { name: 'Close the code viewer' }).click();
+            await page.selectOption('.ca-lens select', 'dependencies');
+
             await page.reload();
             await page.locator('.companion-badge').waitFor(); // resumed with the tab's session
             await node('pkg:rust').waitFor();
