@@ -30,7 +30,15 @@ if (command === 'fetch') {
         console.log(`.codearchy links to ${fs.readlinkSync(DIR)}; remove the link to use the pinned commit.`);
         process.exit(0);
     }
-    if (fs.existsSync(path.join(DIR, '.git')) && git('rev-parse', 'HEAD') === pin.commit) {
+    // An interrupted fetch leaves a repository with no HEAD: start over rather than fail.
+    const head = (() => {
+        try {
+            return fs.existsSync(path.join(DIR, '.git')) ? git('rev-parse', 'HEAD') : undefined;
+        } catch {
+            return undefined;
+        }
+    })();
+    if (head === pin.commit) {
         console.log(`.codearchy is at ${pin.commit.slice(0, 12)}`);
         process.exit(0);
     }
