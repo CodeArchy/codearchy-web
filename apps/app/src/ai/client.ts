@@ -32,7 +32,7 @@ export function workerAiClient(engine: WorkerEngine): AiClient {
         async ask(conversation, question, options, onEvent) {
             chats.set(conversation, onEvent);
             try {
-                await engine.call('aiAsk', { conversation, question, selection: options.selection });
+                await engine.call('aiAsk', { conversation, question, selection: options.selection, earlier: options.earlier });
             } catch (err) {
                 onEvent({ type: 'error', code: 'unavailable', message: err instanceof Error ? err.message : String(err) });
             } finally {

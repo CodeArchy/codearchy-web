@@ -20,7 +20,8 @@
  *                                                     chunk ← { type:'chunk', id, pcm, sampleRate }   (streams)
  *                                                     done  ← { type:'done', id, pcm, sampleRate }    (all jobs: the whole audio)
  *   promote  → { type:'promote', id }                 (make → stream: its chunks so far are posted)
- *   bump     → { type:'bump', id, rank }
+ *   bump     → { type:'bump', id, rank }                (a queued job's priority, up or down)
+ *   drop     → { type:'drop', id }                    (not started yet: removed; dropped ← { type:'dropped', ids })
  *   cancel   → { type:'cancel', kind:'stream' | 'pending' }   (stream: kept going in the background; pending: dropped ← { type:'dropped', ids })
  *                                                     error ← { type:'error', id?, message }
  */
@@ -54,7 +55,8 @@ type In =
     | { type: 'job'; id: number; kind: Kind; rank: number; text: string; voice: string; speed: number }
     | { type: 'promote'; id: number }
     | { type: 'bump'; id: number; rank: number }
-    | { type: 'cancel'; kind: 'stream' | 'pending' };
+    | { type: 'cancel'; kind: 'stream' | 'pending' }
+    | { type: 'drop'; id: number };
 
 const post = (data: unknown, transfer: Transferable[] = []) => (self as unknown as Worker).postMessage(data, transfer);
 
@@ -80,7 +82,10 @@ function installFetchShim(base: string): void {
  * hundred characters at a time), and a short first piece when it's spoken so
  * the first sound comes quickly. One pass, no backtracking.
  */
-function pieces(text: string, quickStart: boolean): string[] {
+/** Background jobs (made ahead) run in small pieces: an inference can't be interrupted, so this bounds how long a phrase someone is waiting for waits. */
+const BACKGROUND_PIECE = 48;
+
+function pieces(text: string, quickStart: boolean, max = 200): string[] {
     const sentences: string[] = [];
     let start = 0;
     for (let i = 0; i < text.length; i++) {
@@ -104,7 +109,7 @@ function pieces(text: string, quickStart: boolean): string[] {
         }
         if (s) out.push(s);
     };
-    sentences.forEach((s, i) => (quickStart && i === 0 ? cut(s, 70, 20) : cut(s, 200, 60)));
+    sentences.forEach((s, i) => (quickStart && i === 0 ? cut(s, 70, 20) : cut(s, max, Math.min(60, Math.round(max / 2)))));
     return out;
 }
 
@@ -208,8 +213,8 @@ self.onmessage = (ev: MessageEvent<In>) => {
             );
             break;
         case 'job':
-            // Every job starts with a short phrase: a job made ahead may be promoted to speech any time.
-            jobs.push({ id: msg.id, kind: msg.kind, rank: msg.rank, seq: seq++, pieces: pieces(msg.text, true), at: 0, voice: msg.voice, speed: msg.speed, chunks: [], sampleRate: 24000, seconds: 0 });
+            // A phrase from the speech engine is already sized (start short, grow); streams start short too.
+            jobs.push({ id: msg.id, kind: msg.kind, rank: msg.rank, seq: seq++, pieces: pieces(msg.text, msg.kind === 'stream', msg.rank > 0 ? BACKGROUND_PIECE : 200), at: 0, voice: msg.voice, speed: msg.speed, chunks: [], sampleRate: 24000, seconds: 0 });
             void pump();
             break;
         case 'promote': {
@@ -222,9 +227,18 @@ self.onmessage = (ev: MessageEvent<In>) => {
             for (const c of job.chunks) post({ type: 'chunk', id: job.id, pcm: c.slice(), sampleRate: job.sampleRate });
             break;
         }
-        case 'bump': {
+        case 'drop': {
             const job = jobs.find((j) => j.id === msg.id);
-            if (job) job.rank = Math.min(job.rank, msg.rank);
+            if (job && job.at === 0 && job.kind === 'make') {
+                jobs.splice(jobs.indexOf(job), 1);
+                post({ type: 'dropped', ids: [job.id] });
+            }
+            break;
+        }
+        case 'bump': {
+            // Up or down: a phrase whose urgent asker gave up goes back behind what's needed now.
+            const job = jobs.find((j) => j.id === msg.id);
+            if (job && job.kind === 'make') job.rank = msg.rank;
             break;
         }
         case 'cancel': {

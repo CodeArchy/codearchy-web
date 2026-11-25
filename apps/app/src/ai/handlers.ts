@@ -2,7 +2,7 @@
  * The AI side of the engine worker, as engine handlers:
  *
  *   ai      { method, params }                 an AiClient request (state, card, setKey…)
- *   aiAsk   { conversation, question, selection? }   streams { channel: 'aiChat' } events, then resolves
+ *   aiAsk   { conversation, question, selection?, earlier? }   streams { channel: 'aiChat' } events, then resolves
  *
  * The AI host and the providers load on first use, as their own chunk, so the
  * app pays nothing for AI until someone opens the Ask panel or AI settings.
@@ -50,7 +50,9 @@ export const aiHandlers: Record<string, EngineHandler> = {
         remember(ws, ctx);
         const conversation = String(params.conversation ?? '');
         const selection = typeof params.selection === 'string' ? params.selection : undefined;
-        await (await aiHost()).ask(conversation, String(params.question ?? ''), { selection }, (event) => ctx.emit({ channel: 'aiChat', conversation, event }));
+        // A follow-up after a reload: the turns the page kept (the host only uses them if it lost the conversation).
+        const earlier = Array.isArray(params.earlier) ? (params.earlier as Array<{ question: string; answer: string }>) : undefined;
+        await (await aiHost()).ask(conversation, String(params.question ?? ''), { selection, ...(earlier ? { earlier } : {}) }, (event) => ctx.emit({ channel: 'aiChat', conversation, event }));
         return true;
     },
 };
