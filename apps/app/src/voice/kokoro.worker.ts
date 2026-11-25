@@ -78,19 +78,20 @@ function installFetchShim(base: string): void {
 }
 
 /**
- * Sentences, with long ones cut at a comma or a space (Kokoro reads a few
- * hundred characters at a time), and a short first piece when it's spoken so
- * the first sound comes quickly. One pass, no backtracking.
+ * Whole sentences, as a person reads: Kokoro gives each piece its own
+ * intonation, so a sentence cut at a comma sounds like it ended there. Only a
+ * sentence too long for the model (~300 characters) is split, at its last
+ * strong break (; : —), else its last comma, else its last space. The speech
+ * engine already sends a sentence at a time, so this is mostly a guard.
  */
-/** Background jobs (made ahead) run in small pieces: an inference can't be interrupted, so this bounds how long a phrase someone is waiting for waits. */
-const BACKGROUND_PIECE = 48;
+const LONG = 300;
 
-function pieces(text: string, quickStart: boolean, max = 200): string[] {
+function pieces(text: string): string[] {
     const sentences: string[] = [];
     let start = 0;
     for (let i = 0; i < text.length; i++) {
         const c = text[i];
-        if ((c === '.' || c === '!' || c === '?' || c === ';') && (i + 1 === text.length || text[i + 1] === ' ' || text[i + 1] === '\n')) {
+        if ((c === '.' || c === '!' || c === '?') && (i + 1 === text.length || text[i + 1] === ' ' || text[i + 1] === '\n')) {
             const s = text.slice(start, i + 1).trim();
             if (s) sentences.push(s);
             start = i + 1;
@@ -99,17 +100,18 @@ function pieces(text: string, quickStart: boolean, max = 200): string[] {
     const rest = text.slice(start).trim();
     if (rest) sentences.push(rest);
     const out: string[] = [];
-    const cut = (s: string, max: number, min: number) => {
-        while (s.length > max) {
-            let at = s.lastIndexOf(', ', max);
-            if (at < min) at = s.lastIndexOf(' ', max);
-            if (at < min) at = max;
+    for (let s of sentences) {
+        while (s.length > LONG) {
+            const min = LONG / 2;
+            const strong = Math.max(s.lastIndexOf('; ', LONG), s.lastIndexOf(': ', LONG), s.lastIndexOf('— ', LONG));
+            let at = strong >= min ? strong : s.lastIndexOf(', ', LONG);
+            if (at < min) at = s.lastIndexOf(' ', LONG) - 1;
+            if (at < min - 1) at = LONG - 1;
             out.push(s.slice(0, at + 1).trim());
             s = s.slice(at + 1).trim();
         }
         if (s) out.push(s);
-    };
-    sentences.forEach((s, i) => (quickStart && i === 0 ? cut(s, 70, 20) : cut(s, max, Math.min(60, Math.round(max / 2)))));
+    }
     return out;
 }
 
@@ -214,7 +216,7 @@ self.onmessage = (ev: MessageEvent<In>) => {
             break;
         case 'job':
             // A phrase from the speech engine is already sized (start short, grow); streams start short too.
-            jobs.push({ id: msg.id, kind: msg.kind, rank: msg.rank, seq: seq++, pieces: pieces(msg.text, msg.kind === 'stream', msg.rank > 0 ? BACKGROUND_PIECE : 200), at: 0, voice: msg.voice, speed: msg.speed, chunks: [], sampleRate: 24000, seconds: 0 });
+            jobs.push({ id: msg.id, kind: msg.kind, rank: msg.rank, seq: seq++, pieces: pieces(msg.text), at: 0, voice: msg.voice, speed: msg.speed, chunks: [], sampleRate: 24000, seconds: 0 });
             void pump();
             break;
         case 'promote': {
