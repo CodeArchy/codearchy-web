@@ -122,9 +122,11 @@ export interface Opening {
     label: string;
     /** choosing: the picker is open · reading: files or the zip are read · indexing: the engine runs. */
     step: 'choosing' | 'reading' | 'indexing';
-    /** The engine's own progress (checking, parsing, saving). */
+    /** The engine's own progress (download, checking, parsing, saving). */
     progress?: { phase: string; current: number; total: number };
     started: number;
+    /** Downloaded from GitHub or GitLab (a repository URL), instead of read from this machine. */
+    remote?: 'GitHub' | 'GitLab';
 }
 
 const STEPS = [
@@ -135,7 +137,7 @@ const STEPS = [
 
 function activeStep(o: Opening): number {
     if (o.step !== 'indexing' || !o.progress) return 0;
-    if (o.progress.phase === 'checking') return 0;
+    if (o.progress.phase === 'download' || o.progress.phase === 'checking') return 0;
     if (o.progress.phase === 'parsing') return o.progress.current >= o.progress.total ? 2 : 1;
     return 2;
 }
@@ -172,13 +174,19 @@ export function OpeningCard({ opening, onCancel }: { opening: Opening; onCancel?
     }
     const step = activeStep(opening);
     const p = opening.progress;
-    const parsing = p?.phase === 'parsing' && p.total > 0;
-    const pct = parsing ? Math.round((p.current / p.total) * 100) : undefined;
+    const counted = (p?.phase === 'parsing' || p?.phase === 'download') && p.total > 0;
+    const pct = counted ? Math.min(100, Math.round((p.current / p.total) * 100)) : undefined;
     const detail =
         opening.step === 'reading'
             ? `Reading ${opening.label}…`
             : !p
-              ? 'Starting the engine…'
+              ? opening.remote
+                  ? `Asking ${opening.remote} for the files…`
+                  : 'Starting the engine…'
+              : p.phase === 'download'
+                ? opening.remote === 'GitLab'
+                    ? `Downloaded ${p.current.toLocaleString()}${p.total ? ` of ${p.total.toLocaleString()}` : ''} KB from GitLab`
+                    : `Downloaded ${p.current.toLocaleString()} of ${p.total.toLocaleString()} files from ${opening.remote ?? 'the repository'}`
               : p.phase === 'checking'
                 ? `Checking ${p.current.toLocaleString()} of ${p.total.toLocaleString()} files`
                 : p.phase === 'parsing'
@@ -207,14 +215,14 @@ export function OpeningCard({ opening, onCancel }: { opening: Opening; onCancel?
                             {i < step ? <Icon name="check" size={11} /> : null}
                         </span>
                         <span>
-                            {s.label}
+                            {s.id === 'read' && opening.remote ? `Download from ${opening.remote}` : s.label}
                             {i === step && pct !== undefined ? <span className="muted"> · {pct}%</span> : null}
-                            <span className="muted step-hint">{s.hint}</span>
+                            <span className="muted step-hint">{s.id === 'read' && opening.remote ? 'Only the code files, straight into this tab' : s.hint}</span>
                         </span>
                     </li>
                 ))}
             </ol>
-            <p className="muted small-print">Everything happens in this browser: nothing is uploaded.</p>
+            <p className="muted small-print">{opening.remote ? `Downloaded from ${opening.remote} by this browser; nothing is uploaded.` : 'Everything happens in this browser: nothing is uploaded.'}</p>
         </div>
     );
 }
@@ -223,6 +231,9 @@ export interface OpenActionsProps {
     onFolder(): void;
     onZip(): void;
     onSample(): void;
+    repoUrl: string;
+    onRepoUrl(v: string): void;
+    onRepo(): void;
     canWatch: boolean;
     pairLink: string;
     onPairLink(v: string): void;
@@ -251,6 +262,20 @@ export function OpenActions(props: OpenActionsProps) {
                 </button>
             </div>
             <p className="muted drop-note">…or drop a folder or a .zip anywhere on this page.</p>
+            <form
+                className="pair repo"
+                aria-label="Open a public repository"
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    props.onRepo();
+                }}
+            >
+                <Icon name="globe" size={16} />
+                <input aria-label="Public repository URL" placeholder="Public repository: https://github.com/owner/repo or gitlab.com/group/project" value={props.repoUrl} onChange={(e) => props.onRepoUrl(e.target.value)} />
+                <button type="submit" disabled={!props.repoUrl.trim()}>
+                    Open
+                </button>
+            </form>
             <section className="companion" aria-label="Connect to the Companion">
                 <h2>Big repository? Connect to the Companion</h2>
                 <p className="muted">

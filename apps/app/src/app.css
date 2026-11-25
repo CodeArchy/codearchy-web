@@ -177,3 +177,12 @@ a { color: var(--accent); }
 .open-dialog .companion { margin-top: 4px; max-width: none; }
 .open-dialog .pair button { font: inherit; padding: 6px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; }
 .open-dialog .drop-note { margin: 0; }
+
+/* Open a public repository by URL */
+.pair.repo { align-items: center; margin: 4px 0 18px; padding: 8px 10px; border: 1px solid var(--line, #d9dde5); border-radius: 12px; background: var(--panel, transparent); }
+.pair.repo > svg { color: var(--muted, #6b7280); flex: none; }
+.pair.repo input { border: 0; padding: 4px 2px; }
+.pair.repo input:focus { outline: none; }
+.pair.repo:focus-within { outline: 2px solid var(--accent, #3b5bdb); outline-offset: 1px; }
+.pair.repo button { font: inherit; padding: 6px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; }
+.pair.repo button:disabled { opacity: 0.5; cursor: default; }
