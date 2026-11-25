@@ -289,7 +289,8 @@ export function webVoiceClient(): VoiceClient {
 
     const audioContext = () => {
         ctx ??= new AudioContext();
-        void ctx.resume();
+        // Never left unhandled: without an audio device it never settles, and Firefox rejects it on navigation.
+        if (ctx.state === 'suspended') void ctx.resume().catch(() => undefined);
         return ctx;
     };
     function schedule(pcm: Float32Array, sampleRate: number): void {
