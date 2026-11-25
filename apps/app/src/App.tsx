@@ -12,7 +12,7 @@ import { useEffect, useMemo, useRef, useState, type ChangeEvent, type DragEvent 
 import { CodeArchyMap, Icon } from '@codearchy/ui';
 import type { AuthorshipOrigin, AuthorshipRange, EngineClient, WorkspaceSummary } from '@codearchy/protocol';
 import { CompanionEngine, parsePairing, type CompanionTarget } from '@codearchy/platform-browser/companion';
-import { WorkerEngine, canPickDirectory, pickDirectory, sourceFromDrop, sourceFromFileList, sourceFromZip, type EngineSource } from '@codearchy/platform-browser/client';
+import { WorkerEngine, canPickDirectory, parseRepositoryUrl, pickDirectory, sourceFromDrop, sourceFromFileList, sourceFromRepository, sourceFromZip, type EngineSource } from '@codearchy/platform-browser/client';
 import { workerAiClient } from './ai/client';
 import { CodeViewer } from './CodeViewer';
 import { BranchReportDialog } from './BranchReport';
@@ -163,12 +163,12 @@ export function App() {
     };
 
     /** Indexes a source; the current workspace (if any) stays on screen until the new one is ready. */
-    const open = async (source: EngineSource | undefined, label: string) => {
+    const open = async (source: EngineSource | undefined, label: string, remote?: 'GitHub' | 'GitLab') => {
         if (!source) return setOpening(undefined);
         leaveCompanion();
         setError(undefined);
         setNotice(undefined);
-        setOpening((o) => ({ label, step: 'indexing', started: o?.started ?? Date.now() }));
+        setOpening((o) => ({ label, step: 'indexing', started: o?.started ?? Date.now(), ...(remote ? { remote } : {}) }));
         try {
             const s = await engine.open(source);
             setViewer(undefined);
@@ -177,11 +177,24 @@ export function App() {
             setPhase({ kind: 'ready' });
             setOpenDialog(false);
         } catch (err) {
-            setError((err as Error).message.split('\n')[0]);
+            setError((err as Error).message.split('\n')[0]!.replace(/^[A-Za-z]*Error: /, ''));
         } finally {
             setOpening(undefined);
         }
     };
+
+    /** A public GitHub or GitLab repository, by URL: the engine worker downloads only the files it reads. */
+    const [repoUrl, setRepoUrl] = useState('');
+    const openRepository = (url: string) => {
+        const ref = parseRepositoryUrl(url);
+        if (!ref) return setError('That isn’t a GitHub or GitLab repository URL. Try https://github.com/owner/repo.');
+        void open(sourceFromRepository(url), ref.path, ref.host === 'github' ? 'GitHub' : 'GitLab');
+    };
+    // ?repo=owner/repo (a shared link) opens that repository straight away.
+    useEffect(() => {
+        const repo = new URLSearchParams(location.search).get('repo');
+        if (repo && !parsePairing(location.hash)) openRepository(repo);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const openFolder = async () => {
         begin('a folder', 'choosing');
@@ -247,6 +260,9 @@ export function App() {
             onFolder={() => void openFolder()}
             onZip={openZip}
             onSample={() => void openSample()}
+            repoUrl={repoUrl}
+            onRepoUrl={setRepoUrl}
+            onRepo={() => openRepository(repoUrl)}
             canWatch={canPickDirectory()}
             pairLink={pairLink}
             onPairLink={setPairLink}

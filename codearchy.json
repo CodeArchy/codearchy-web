@@ -1,5 +1,5 @@
 {
     "$comment": "The codearchy commit the web app is built from (no npm packages are published yet). Bump it, then run `pnpm codearchy:fetch && pnpm install` and commit the lockfile.",
     "repository": "https://github.com/CodeArchy/codearchy.git",
-    "commit": "e03139d611f9e329d8d258ff5fcca1e70bd48594"
+    "commit": "dbea903600d3feba675dd4d03eb53bf3c7cadf93"
 }
