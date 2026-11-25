@@ -305,6 +305,8 @@ export function App() {
                         hostKind="web"
                         theme={theme}
                         revision={String(revision)}
+                        // Chat history, tour drafts and progress are kept per codebase, across reloads.
+                        workspace={`${companion ? 'companion' : summary.storage}:${summary.name}`}
                         dataVersion={dataVersion}
                         // AI runs beside the in-browser engine; with the Companion it comes in a later release.
                         ai={companion ? undefined : ai}
