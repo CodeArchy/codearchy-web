@@ -186,3 +186,8 @@ a { color: var(--accent); }
 .pair.repo:focus-within { outline: 2px solid var(--accent, #3b5bdb); outline-offset: 1px; }
 .pair.repo button { font: inherit; padding: 6px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; }
 .pair.repo button:disabled { opacity: 0.5; cursor: default; }
+
+/* A terminal command with a Copy button (the Companion) */
+.copy-command { display: flex; align-items: center; gap: 8px; margin: 8px 0 10px; padding: 6px 6px 6px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.copy-command code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; font-size: 13px; }
+.copy-command button { font: inherit; font-size: 12px; padding: 4px 12px; border-radius: 7px; border: 1px solid var(--line); background: var(--bg, transparent); color: var(--fg); cursor: pointer; flex: none; }
