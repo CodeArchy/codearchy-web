@@ -157,7 +157,7 @@ export function App() {
     const pastePairing = () => {
         const hash = pairLink.trim().includes('#') ? pairLink.trim().slice(pairLink.trim().indexOf('#')) : pairLink.trim();
         const pairing = parsePairing(hash);
-        if (!pairing) return setError('That is not a Companion link: run `codearchy serve` and copy the link it prints.');
+        if (!pairing) return setError('That is not a Companion link: run `npx codearchy serve --root .` in your repository and copy the link it prints.');
         setPairLink('');
         void connectCompanion({ host: pairing.host, port: pairing.port }, { token: pairing.token });
     };

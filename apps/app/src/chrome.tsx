@@ -279,13 +279,14 @@ export function OpenActions(props: OpenActionsProps) {
             <section className="companion" aria-label="Connect to the Companion">
                 <h2>Big repository? Connect to the Companion</h2>
                 <p className="muted">
-                    Run <code>codearchy serve --root /path/to/repo</code> (the{' '}
+                    In your repository, run the{' '}
                     <a href="https://github.com/CodeArchy/codearchy/blob/main/docs/guides/companion.md" rel="noopener noreferrer">
                         CodeArchy CLI
-                    </a>
-                    ) and open the link it prints. The engine then runs natively on this machine (live updates in any browser, no size limit, authorship from git), and this page talks to it directly. Only this
-                    machine can connect.
+                    </a>{' '}
+                    (Node.js 22 or later) and open the link it prints. The engine then runs natively on this machine (live updates in any browser, no size limit, authorship from git), and this page talks to
+                    it directly. Only this machine can connect.
                 </p>
+                <CopyCommand command="npx codearchy serve --root ." />
                 <form
                     className="pair"
                     onSubmit={(e) => {
@@ -300,5 +301,26 @@ export function OpenActions(props: OpenActionsProps) {
                 </form>
             </section>
         </>
+    );
+}
+
+/** A command to paste into a terminal, with a Copy button. */
+function CopyCommand({ command }: { command: string }) {
+    const [copied, setCopied] = useState(false);
+    const copy = () =>
+        void navigator.clipboard?.writeText(command).then(
+            () => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 1500);
+            },
+            () => undefined
+        );
+    return (
+        <div className="copy-command">
+            <code>{command}</code>
+            <button type="button" onClick={copy} aria-label={`Copy: ${command}`}>
+                {copied ? 'Copied' : 'Copy'}
+            </button>
+        </div>
     );
 }
