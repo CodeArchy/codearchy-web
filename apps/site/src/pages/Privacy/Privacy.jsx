@@ -1,428 +1,314 @@
-import { useEffect } from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faArrowLeft, faShieldHalved } from '@fortawesome/free-solid-svg-icons'
+import { useEffect, useState } from 'react'
+import { CpuIcon, GlobeIcon, ShieldIcon, SlidersIcon } from '../../components/icons'
+import { openCookieSettings } from '../../lib/consent'
+import { LINKS } from '../../data/links'
 import './Privacy.css'
 
-const LAST_UPDATED = '17 May 2026'
-const CONTACT_EMAIL = 'https://github.com/CodeArchy/codearchy/issues'
-const GITHUB_REPO   = 'https://github.com/CodeArchy/codearchy'
+const LAST_UPDATED = '26 November 2026'
+/** A private address for data requests. Leave empty to point people to GitHub only. */
+const PRIVACY_EMAIL = ''
+
+const SECTIONS = [
+  ['who', 'Who we are'],
+  ['code', 'Your code'],
+  ['ai', 'AI features'],
+  ['voice', 'The voice'],
+  ['website', 'This website'],
+  ['cookies', 'Cookies and storage'],
+  ['sharing', 'Who else is involved'],
+  ['rights', 'Your rights'],
+  ['other', 'Children, security, changes'],
+  ['contact', 'Contact'],
+]
+
+const SUMMARY = [
+  [CpuIcon, 'Your code stays on your machine', 'CodeArchy reads your code on your computer or in your browser tab. We never receive your code, your questions or your API keys.'],
+  [SlidersIcon, 'AI is off until you turn it on', 'When you do, requests go straight from your device to the provider you pick, and you choose how much they see.'],
+  [GlobeIcon, 'Analytics only with your yes', 'This website uses Google Analytics only if you accept. Fonts, images and videos come from our own server.'],
+  [ShieldIcon, 'No accounts, no ads', 'There is nothing to sign up for. We don’t sell data, show ads or build profiles.'],
+]
 
 export default function Privacy() {
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' })
-    document.title = 'Privacy Policy — CodeArchy'
-    return () => { document.title = 'CodeArchy' }
-  }, [])
-
-  const handleBack = (e) => {
-    e.preventDefault()
-    if (window.history.length > 1) {
-      window.history.back()
-    } else {
-      window.location.href = '/'
+    document.title = 'Privacy policy · CodeArchy'
+    // The page renders after load, so jump to a #section ourselves.
+    const target = window.location.hash && document.getElementById(window.location.hash.slice(1))
+    if (target) target.scrollIntoView()
+    else window.scrollTo(0, 0)
+    return () => {
+      document.title = 'CodeArchy: see how your codebase is built'
     }
-  }
+  }, [])
+  const active = useActiveSection()
 
   return (
-    <div className="privacy-page">
-      {/* Background dot grid matches global body::before */}
-      <div className="privacy-bg" aria-hidden="true" />
-
-      {/* Top nav */}
-      <nav className="privacy-nav">
-        <div className="container privacy-nav__inner">
-          <a href="/" className="privacy-nav__logo" onClick={handleBack}>
-            <img src="/assets/images/logo-white.png" alt="CodeArchy" width="26" height="26" />
-            <span>CodeArchy</span>
-          </a>
-          <a href="/" className="privacy-back" onClick={handleBack}>
-            <FontAwesomeIcon icon={faArrowLeft} />
-            <span>Back to site</span>
-          </a>
-        </div>
-      </nav>
-
-      {/* Hero */}
-      <header className="privacy-hero">
-        <div className="container privacy-hero__inner">
-          <div className="privacy-hero__icon" aria-hidden="true">
-            <FontAwesomeIcon icon={faShieldHalved} />
-          </div>
-          <h1 className="privacy-hero__title">Privacy Policy</h1>
-          <p className="privacy-hero__meta">Last updated: <strong>{LAST_UPDATED}</strong></p>
-          <p className="privacy-hero__lead">
-            CodeArchy is built on a single founding principle: <strong>your code is yours</strong>.
-            This policy explains what information we collect, why, and exactly how we handle it —
-            in plain language.
+    <main className="policy">
+      <header className="policy__head">
+        <div className="container">
+          <p className="eyebrow">Privacy</p>
+          <h1>Privacy policy</h1>
+          <p className="lead">
+            What CodeArchy does with your code and your data, in plain words. It covers this website, the web app at
+            app.codearchy.com, the VS Code extension and the <code>codearchy</code> command-line tool.
           </p>
+          <p className="policy__date">Last updated {LAST_UPDATED}</p>
         </div>
       </header>
 
-      {/* Content */}
-      <main className="privacy-content">
-        <div className="container privacy-content__inner">
-
-          {/* Quick summary */}
-          <section className="pp-section pp-summary" aria-label="Summary">
-            <div className="pp-summary__grid">
-              <SummaryCard
-                icon="🚫"
-                title="No source code ever leaves your machine"
-                body="The CodeArchy VS Code extension processes your codebase 100% locally using Tree-sitter and a locally-running Gemma 4 model via Ollama. No file, symbol, query, or AI response is sent to any external server."
-              />
-              <SummaryCard
-                icon="🍪"
-                title="This website uses only cookies you approve"
-                body="The CodeArchy website may set analytics or marketing cookies only after you explicitly accept them via the cookie consent banner. Strictly necessary cookies are always active."
-              />
-              <SummaryCard
-                icon="🔒"
-                title="No account, no tracking by default"
-                body="We do not require you to register an account. We do not fingerprint, track, or profile you without your consent."
-              />
+      <div className="container">
+        <section className="policy__summary" aria-label="In short">
+          {SUMMARY.map(([Icon, title, text]) => (
+            <div key={title} className="policy__point">
+              <span className="policy__icon" aria-hidden="true">
+                <Icon />
+              </span>
+              <h2>{title}</h2>
+              <p>{text}</p>
             </div>
-          </section>
+          ))}
+        </section>
 
-          <Section id="who-we-are" title="1. Who We Are">
-            <p>
-              CodeArchy is an open-source VS Code extension created and maintained by{' '}
-              <strong>I. Kennedy Yinusa</strong> ("we", "us", "our"). The extension and its
-              accompanying website (<em>this site</em>) are provided free of charge under the{' '}
-              <a href={`${GITHUB_REPO}/blob/main/LICENSE`} target="_blank" rel="noopener noreferrer">
-                MIT License
-              </a>.
-            </p>
-            <p>
-              For the purposes of EU/UK GDPR, the extension itself does not
-              transmit any data to us and therefore does not involve us as a controller.
-            </p>
-          </Section>
+        <div className="policy__layout">
+          <nav className="policy__toc" aria-label="On this page">
+            <p>On this page</p>
+            <ol>
+              {SECTIONS.map(([id, label]) => (
+                <li key={id}>
+                  <a href={`#${id}`} className={active === id ? 'is-active' : undefined}>
+                    {label}
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </nav>
 
-          <Section id="extension-privacy" title="2. The VS Code Extension — Zero Data Collection">
-            <p>
-              The CodeArchy extension processes all data <strong>exclusively on your local machine</strong>.
-              Specifically:
-            </p>
-            <ul>
-              <li>
-                <strong>Source code parsing</strong> — Tree-sitter builds an AST and dependency
-                graph locally. No source file or parsed result is transmitted anywhere.
-              </li>
-              <li>
-                <strong>AI inference</strong> — Your dependency graph is sent to a Gemma 4 model
-                running via Ollama at <code>http://localhost:11434</code>. This is a loopback
-                address — requests never leave your device.
-              </li>
-              <li>
-                <strong>Conversational queries</strong> — Every question you ask in the AI chat
-                panel is sent only to your local Ollama instance.
-              </li>
-              <li>
-                <strong>Voice synthesis</strong> — Kokoro TTS runs inside a VS Code Webview Web
-                Worker. No audio is transmitted; speech is generated on-device using locally-cached
-                model weights.
-              </li>
-              <li>
-                <strong>Telemetry</strong> — CodeArchy contains <strong>no telemetry, no
-                analytics, and no crash reporting</strong> whatsoever. We have deliberately
-                chosen not to include these.
-              </li>
-            </ul>
-            <Callout>
-              We have no technical ability to access your source code, your queries, or your AI
-              responses. This is not a policy commitment alone — it is an architectural guarantee.
-            </Callout>
-          </Section>
+          <article className="policy__body">
+            <Section id="who" title="Who we are">
+              <p>
+                CodeArchy is free, open-source software under the <a href={LINKS.license}>MIT license</a>, made and
+                maintained by I. Kennedy Yinusa (&ldquo;we&rdquo;, &ldquo;us&rdquo;). For this website we are the
+                data controller under the EU and UK General Data Protection Regulation (GDPR).
+              </p>
+              <p>
+                The extension, the web app and the command-line tool run on your device. They don&rsquo;t send us
+                anything, so for what they do with your code we hold no data and are not a controller.
+              </p>
+            </Section>
 
-          <Section id="website-data" title="3. Data Collected by This Website">
-            <p>
-              When you visit <strong>codearchy.com</strong> (or the domain on which this site is
-              hosted) we may collect the following categories of information:
-            </p>
-            <Table
-              headers={['Category', 'Examples', 'Legal basis', 'Default state']}
-              rows={[
-                ['Strictly necessary', 'Cookie consent preference (localStorage)', 'Legitimate interest / legal obligation', 'Always active'],
-                ['Analytics', 'Page views, session duration, referrer, browser type', 'Consent (Art. 6(1)(a) GDPR)', 'Off — requires opt-in'],
-                ['Marketing', 'Cross-site visit tracking for personalised ads', 'Consent (Art. 6(1)(a) GDPR)', 'Off — requires opt-in'],
-              ]}
-            />
-            <p>
-              We do <strong>not</strong> collect your name, email address, or any other directly
-              identifying information unless you voluntarily provide it (e.g. by opening a GitHub
-              issue).
-            </p>
-          </Section>
+            <Section id="code" title="Your code">
+              <p>Everything CodeArchy shows you is worked out on your device:</p>
+              <Table
+                head={['What happens', 'Where it happens']}
+                rows={[
+                  ['Reading code and drawing the map, lenses, flows and tours', 'On your computer (extension, CLI) or inside your browser tab (web app), with tree-sitter. Nothing is uploaded.'],
+                  ['Opening a public repository by URL in the web app', 'Your browser downloads the files straight from GitHub or GitLab, without any credentials. They see the request as they would any visit.'],
+                  ['Ownership and AI authorship', 'Read from your local git history (git blame and commit metadata). Names and email addresses stay on your device and are never sent to an AI model.'],
+                  ['Sharing authorship with your team (optional)', 'Stored as git notes that you push to your own git remote, like any commit.'],
+                  ['The Companion (codearchy serve)', 'A server on your computer that only listens on 127.0.0.1, so only your own browser can reach it.'],
+                  ['The MCP server (codearchy mcp)', 'Talks to the AI agent you connect, on your computer. That agent then sends what it reads to its own provider under its own terms.'],
+                  ['Settings, saved tours and API keys', 'Kept on your device. The extension keeps keys in your operating system’s keychain (VS Code SecretStorage); the web app encrypts them in your browser’s storage.'],
+                ]}
+              />
+              <p>
+                None of the extension, the web app or the CLI contains telemetry, analytics or crash reporting. We have
+                no way to see your code, your questions or the answers you get.
+              </p>
+            </Section>
 
-          <Section id="cookies" title="4. Cookies &amp; Local Storage">
-            <p>
-              A <strong>cookie</strong> is a small text file placed on your device. We also use
-              browser <strong>localStorage</strong> for certain preferences.
-            </p>
+            <Section id="ai" title="AI features">
+              <p>
+                AI is optional. It starts at <strong>Local only</strong>, where nothing leaves your device. If you turn
+                it on, you pick where requests go:
+              </p>
+              <ul>
+                <li>
+                  <strong>A model on your machine</strong>, with Ollama or LM Studio. Requests stay on your computer.
+                </li>
+                <li>
+                  <strong>GitHub Copilot</strong>, through VS Code, under your Copilot plan and GitHub&rsquo;s terms.
+                </li>
+                <li>
+                  <strong>Your own API key</strong> for Anthropic, OpenAI, Google Gemini, OpenRouter, Groq or Mistral.
+                  Requests go directly from your device to that provider. They never pass through us.
+                </li>
+              </ul>
+              <p>You decide how much a cloud model sees:</p>
+              <ul>
+                <li>
+                  <strong>Structure</strong>: names of folders, files and symbols, and how they connect.
+                </li>
+                <li>
+                  <strong>Code excerpts</strong>: the structure plus short pieces of source code.
+                </li>
+              </ul>
+              <p>
+                Before anything is sent, secrets such as keys and tokens are detected and removed. You can preview each
+                request and set daily or monthly limits. The provider handles what it receives under its own privacy
+                policy and your agreement with it; for that processing you, or your organisation, are the controller.
+              </p>
+            </Section>
 
-            <h3 className="pp-subheading">4.1 Strictly Necessary</h3>
-            <CookieTable rows={[
-              {
-                name: 'codearchy_cookie_consent',
-                type: 'localStorage',
-                purpose: 'Stores your cookie preference (accepted categories + timestamp) so we do not show the consent banner on every visit.',
-                duration: '1 year from consent',
-                provider: 'First-party',
-              },
-            ]} />
+            <Section id="voice" title="The voice">
+              <p>
+                Tours and answers can be read aloud by a neural voice (Kokoro) that runs on your device, or by your
+                system&rsquo;s own voice. The text is never sent anywhere. The voice model is downloaded once and then
+                kept on your device: the web app gets it from app.codearchy.com, and the VS Code extension gets it from
+                Hugging Face, which sees that download like any other.
+              </p>
+            </Section>
 
-            <h3 className="pp-subheading">4.2 Analytics (only if you consent)</h3>
-            <p>
-              If you accept analytics cookies, we may use a privacy-respecting analytics tool to
-              understand aggregate site usage (e.g. which pages are most visited). No individual
-              profile is built. Analytics data is anonymised or pseudonymised before storage.
-            </p>
+            <Section id="website" title="This website">
+              <h3>Server logs</h3>
+              <p>
+                Like any web server, ours records each request: IP address, time, the page asked for, the referring
+                page and your browser&rsquo;s user agent. We use these logs only to keep the sites running and secure
+                (legitimate interest), we don&rsquo;t use them to track or profile anyone, and they are normally kept
+                for no more than 30 days.
+              </p>
+              <h3>Google Analytics, only if you accept</h3>
+              <p>
+                If you click Accept, we use Google Analytics 4 to see which pages are read and where visitors come
+                from. It records pages visited, the referring site, approximate location (country and city), device,
+                browser and screen size. Google Analytics 4 doesn&rsquo;t log or store IP addresses. We turn off Google
+                signals and ad personalisation, and we don&rsquo;t combine this with anything else.
+              </p>
+              <p>
+                Until you accept, the Google Analytics script isn&rsquo;t loaded at all, so nothing is sent to Google.
+                Analytics data is kept for up to 14 months. The service is provided by Google Ireland Limited; data
+                may be processed by Google LLC in the United States under the EU&ndash;US Data Privacy Framework and
+                the European Commission&rsquo;s standard contractual clauses.
+              </p>
+              <h3>The web app</h3>
+              <p>app.codearchy.com has no analytics, no cookies and no third-party scripts.</p>
+            </Section>
 
-            <h3 className="pp-subheading">4.3 Marketing (only if you consent)</h3>
-            <p>
-              If you accept marketing cookies, third-party advertising partners may set cookies
-              to show you relevant adverts on other websites. You can withdraw consent at any
-              time by clearing your cookies or revisiting the consent panel.
-            </p>
+            <Section id="cookies" title="Cookies and storage">
+              <p>
+                Analytics is the only optional category, and you can change your answer at any time. Turning it off
+                stops it straight away and deletes its cookies.
+              </p>
+              <button type="button" className="btn btn--secondary btn--small policy__cookie-btn" onClick={openCookieSettings}>
+                Cookie settings
+              </button>
+              <Table
+                head={['Name', 'Kind', 'What it’s for', 'How long']}
+                rows={[
+                  [<code key="c">codearchy_cookie_consent</code>, 'Necessary, browser storage', 'Remembers your cookie choice', '12 months, then we ask again'],
+                  [<code key="t">codearchy.site.theme</code>, 'Necessary, browser storage', 'Your light or dark theme, if you pick one', 'Until you clear it'],
+                  [<code key="g">_ga</code>, 'Analytics cookie (only with consent)', 'Google Analytics: tells visits apart', '13 months'],
+                  [<code key="s">_ga_REPDR6673K</code>, 'Analytics cookie (only with consent)', 'Google Analytics: keeps the current visit together', '13 months'],
+                  ['Web app storage', 'Necessary, on your device (app.codearchy.com)', 'Settings, encrypted API keys, saved tours, offline files and the voice model', 'Until you clear the site’s data'],
+                ]}
+              />
+              <p>
+                If your browser sends Global Privacy Control, we treat it as a no and don&rsquo;t ask. You can still
+                allow analytics from Cookie settings.
+              </p>
+            </Section>
 
-            <h3 className="pp-subheading">4.4 Managing your preferences</h3>
-            <p>
-              You can change or withdraw your cookie choices at any time by clearing the{' '}
-              <code>codearchy_cookie_consent</code> key from your browser's localStorage (DevTools
-              → Application → Local Storage) and refreshing the page. The consent banner will
-              reappear.
-            </p>
-            <p>
-              You can also manage cookies through your browser settings. Note that disabling
-              all cookies may affect website functionality.
-            </p>
-          </Section>
+            <Section id="sharing" title="Who else is involved">
+              <p>
+                We don&rsquo;t sell or share personal data. For this website we use two processors: our hosting
+                provider, which runs the server, and Google, for analytics if you allow it.
+              </p>
+              <p>
+                Other services are ones you choose to use, under their own privacy policies:{' '}
+                <Ext href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">GitHub</Ext>,{' '}
+                <Ext href="https://about.gitlab.com/privacy/">GitLab</Ext>,{' '}
+                <Ext href="https://privacy.microsoft.com/privacystatement">Microsoft</Ext> (VS Code Marketplace),{' '}
+                <Ext href="https://www.eclipse.org/legal/privacy/">Eclipse Foundation</Ext> (Open VSX),{' '}
+                <Ext href="https://docs.npmjs.com/policies/privacy">npm</Ext>,{' '}
+                <Ext href="https://huggingface.co/privacy">Hugging Face</Ext>, and the AI provider you choose:{' '}
+                <Ext href="https://www.anthropic.com/legal/privacy">Anthropic</Ext>,{' '}
+                <Ext href="https://openai.com/policies/privacy-policy/">OpenAI</Ext>,{' '}
+                <Ext href="https://ai.google.dev/gemini-api/terms">Google Gemini</Ext>,{' '}
+                <Ext href="https://openrouter.ai/privacy">OpenRouter</Ext>,{' '}
+                <Ext href="https://groq.com/privacy-policy/">Groq</Ext> or{' '}
+                <Ext href="https://mistral.ai/terms#privacy-policy">Mistral</Ext>.
+              </p>
+            </Section>
 
-          <Section id="third-parties" title="5. Third-Party Services">
-            <p>
-              This website may embed or link to third-party services. Each operates under its own
-              privacy policy:
-            </p>
-            <ul>
-              <li>
-                <strong>GitHub</strong> (repository hosting, issue tracker) —{' '}
-                <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener noreferrer">
-                  GitHub Privacy Statement
-                </a>
-              </li>
-              <li>
-                <strong>VS Code Marketplace</strong> (extension distribution) —{' '}
-                <a href="https://privacy.microsoft.com/en-us/privacystatement" target="_blank" rel="noopener noreferrer">
-                  Microsoft Privacy Statement
-                </a>
-              </li>
-              <li>
-                <strong>Ollama</strong> (local model server, installed by users) —{' '}
-                <a href="https://ollama.com/privacy" target="_blank" rel="noopener noreferrer">
-                  Ollama Privacy Policy
-                </a>
-              </li>
-            </ul>
-            <p>
-              We do not sell or share your personal data with third parties for their own
-              commercial purposes.
-            </p>
-          </Section>
+            <Section id="rights" title="Your rights">
+              <p>Under the GDPR and the UK GDPR you can:</p>
+              <ul className="policy__rights">
+                <li>ask for a copy of the personal data we hold about you</li>
+                <li>have it corrected or deleted</li>
+                <li>restrict or object to how we use it</li>
+                <li>receive it in a portable format</li>
+                <li>withdraw consent at any time, as easily as you gave it</li>
+                <li>complain to a supervisory authority</li>
+              </ul>
+              <p>
+                We have no accounts, so we usually hold nothing that identifies you. If we can&rsquo;t find data about
+                you, we&rsquo;ll tell you. We reply within one month. To complain, contact the data protection
+                authority where you live (
+                <Ext href="https://www.edpb.europa.eu/about-edpb/about-edpb/members_en">list of EU authorities</Ext>
+                ) or, in the UK, the <Ext href="https://ico.org.uk/make-a-complaint/">ICO</Ext>.
+              </p>
+            </Section>
 
-          <Section id="data-retention" title="6. Data Retention">
-            <p>
-              We retain personal data only for as long as necessary for the purposes described
-              in this policy:
-            </p>
-            <ul>
-              <li>
-                <strong>Cookie consent preference</strong> — stored in your browser's localStorage
-                for up to 1 year, then the banner is shown again.
-              </li>
-              <li>
-                <strong>Analytics data</strong> (if consented) — retained for up to 26 months in
-                aggregated, anonymised form.
-              </li>
-              <li>
-                <strong>GitHub issue content</strong> — retained as long as the issue exists on
-                GitHub, subject to GitHub's policies.
-              </li>
-            </ul>
-          </Section>
+            <Section id="other" title="Children, security, changes">
+              <p>
+                <strong>Children.</strong> CodeArchy is a tool for software engineers and isn&rsquo;t aimed at
+                children under 16. We don&rsquo;t knowingly collect their data.
+              </p>
+              <p>
+                <strong>Security.</strong> The sites are served over HTTPS, and the web app runs under a strict
+                content security policy that allows no third-party scripts. Please report vulnerabilities privately
+                through <Ext href={`${LINKS.github}/security`}>GitHub security advisories</Ext>.
+              </p>
+              <p>
+                <strong>Changes.</strong> When this policy changes, we update the date at the top and record the change
+                in the project&rsquo;s history on GitHub. If a change affects what you agreed to, we ask again.
+              </p>
+            </Section>
 
-          <Section id="your-rights" title="7. Your Rights Under GDPR">
-            <p>
-              If you are located in the European Economic Area (EEA), the United Kingdom, or
-              another jurisdiction with equivalent data protection laws, you have the following
-              rights regarding your personal data:
-            </p>
-            <div className="pp-rights-grid">
-              <RightCard title="Right of access" body="Request a copy of the personal data we hold about you." />
-              <RightCard title="Right to rectification" body="Ask us to correct inaccurate or incomplete data." />
-              <RightCard title="Right to erasure" body="Request deletion of your personal data where there is no compelling reason for us to continue processing it." />
-              <RightCard title="Right to restrict processing" body="Ask us to pause processing your data while a dispute is resolved." />
-              <RightCard title="Right to data portability" body="Receive your data in a structured, machine-readable format." />
-              <RightCard title="Right to object" body="Object to processing based on legitimate interests or for direct marketing." />
-              <RightCard title="Right to withdraw consent" body="Where processing is based on consent, withdraw it at any time without affecting the lawfulness of prior processing." />
-              <RightCard title="Right to lodge a complaint" body="File a complaint with your local supervisory authority (e.g. the ICO in the UK, or your national DPA in the EU)." />
-            </div>
-            <p>
-              To exercise any of these rights, please{' '}
-              <a href={CONTACT_EMAIL} target="_blank" rel="noopener noreferrer">open a GitHub issue</a>{' '}
-              or contact us directly. We will respond within 30 days.
-            </p>
-          </Section>
-
-          <Section id="children" title="8. Children's Privacy">
-            <p>
-              CodeArchy is not directed at children under 13 years of age (or under 16 in the
-              EEA). We do not knowingly collect personal data from children. If you believe a
-              child has provided us with personal data, please contact us and we will delete it
-              promptly.
-            </p>
-          </Section>
-
-          <Section id="security" title="9. Security">
-            <p>
-              We take reasonable technical and organisational measures to protect any personal
-              data we hold. However, no method of transmission over the internet or electronic
-              storage is 100% secure. We encourage you to use the latest version of your browser
-              and to report any security concerns via our{' '}
-              <a href={`${GITHUB_REPO}/security`} target="_blank" rel="noopener noreferrer">
-                GitHub Security page
-              </a>.
-            </p>
-            <p>
-              Because the extension processes all data locally, there is no server-side attack
-              surface for your source code or queries.
-            </p>
-          </Section>
-
-          <Section id="changes" title="10. Changes to This Policy">
-            <p>
-              We may update this Privacy Policy from time to time to reflect changes in the law
-              or our practices. When we make material changes, we will update the "Last updated"
-              date at the top of this page. We encourage you to review this page periodically.
-            </p>
-            <p>
-              Continued use of this website after changes are published constitutes your
-              acceptance of the updated policy.
-            </p>
-          </Section>
-
-          <Section id="contact" title="11. Contact Us">
-            <p>
-              If you have any questions, concerns, or requests regarding this Privacy Policy or
-              your personal data, please reach out via one of the following channels:
-            </p>
-            <ul>
-              <li>
-                <strong>GitHub Issues:</strong>{' '}
-                <a href={CONTACT_EMAIL} target="_blank" rel="noopener noreferrer">
-                  github.com/CodeArchy/codearchy/issues
-                </a>
-              </li>
-              <li>
-                <strong>GitHub Profile:</strong>{' '}
-                <a href="https://github.com/iyinusa" target="_blank" rel="noopener noreferrer">
-                  github.com/iyinusa
-                </a>
-              </li>
-            </ul>
-          </Section>
-
+            <Section id="contact" title="Contact">
+              <p>
+                For questions about this policy, open an issue at{' '}
+                <Ext href={LINKS.issues}>github.com/CodeArchy/codearchy/issues</Ext>.{' '}
+                {PRIVACY_EMAIL ? (
+                  <>
+                    For a request about your own data, email <a href={`mailto:${PRIVACY_EMAIL}`}>{PRIVACY_EMAIL}</a>.
+                  </>
+                ) : (
+                  <>Issues are public, so for a request about your own data, open one asking for a private channel and leave out any personal details.</>
+                )}
+              </p>
+            </Section>
+          </article>
         </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="privacy-footer">
-        <div className="container privacy-footer__inner">
-          <p>
-            © {new Date().getFullYear()} CodeArchy by{' '}
-            <a href="https://github.com/iyinusa" target="_blank" rel="noopener noreferrer">
-              I. Kennedy Yinusa
-            </a>. Released under the{' '}
-            <a href={`${GITHUB_REPO}/blob/main/LICENSE`} target="_blank" rel="noopener noreferrer">
-              MIT License
-            </a>.
-          </p>
-          <a href="/" className="privacy-footer__home" onClick={handleBack}>
-            ← Back to CodeArchy
-          </a>
-        </div>
-      </footer>
-    </div>
+      </div>
+    </main>
   )
 }
 
-/* ─── Sub-components ─────────────────────────────────────────── */
-
 function Section({ id, title, children }) {
   return (
-    <section id={id} className="pp-section" aria-labelledby={`${id}-heading`}>
-      <h2 className="pp-heading" id={`${id}-heading`}>{title}</h2>
+    <section id={id} className="policy__section">
+      <h2>{title}</h2>
       {children}
     </section>
   )
 }
 
-function SummaryCard({ icon, title, body }) {
+function Table({ head, rows }) {
   return (
-    <div className="pp-summary-card">
-      <div className="pp-summary-card__icon" aria-hidden="true">{icon}</div>
-      <h3 className="pp-summary-card__title">{title}</h3>
-      <p className="pp-summary-card__body">{body}</p>
-    </div>
-  )
-}
-
-function Callout({ children }) {
-  return (
-    <div className="pp-callout" role="note">
-      <span className="pp-callout__icon" aria-hidden="true">🔒</span>
-      <p>{children}</p>
-    </div>
-  )
-}
-
-function Table({ headers, rows }) {
-  return (
-    <div className="pp-table-wrap" role="region" aria-label="Data collection table">
-      <table className="pp-table">
-        <thead>
-          <tr>{headers.map((h) => <th key={h}>{h}</th>)}</tr>
-        </thead>
-        <tbody>
-          {rows.map((row, i) => (
-            <tr key={i}>{row.map((cell, j) => <td key={j}>{cell}</td>)}</tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-}
-
-function CookieTable({ rows }) {
-  return (
-    <div className="pp-table-wrap" role="region" aria-label="Cookie details table">
-      <table className="pp-table pp-cookie-table">
+    <div className="policy__table">
+      <table>
         <thead>
           <tr>
-            <th>Name / Key</th>
-            <th>Type</th>
-            <th>Purpose</th>
-            <th>Duration</th>
-            <th>Provider</th>
+            {head.map((h) => (
+              <th key={h} scope="col">
+                {h}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
-          {rows.map((r, i) => (
+          {rows.map((row, i) => (
             <tr key={i}>
-              <td><code>{r.name}</code></td>
-              <td>{r.type}</td>
-              <td>{r.purpose}</td>
-              <td>{r.duration}</td>
-              <td>{r.provider}</td>
+              {row.map((cell, j) => (j === 0 ? <th key={j} scope="row">{cell}</th> : <td key={j}>{cell}</td>))}
             </tr>
           ))}
         </tbody>
@@ -431,11 +317,30 @@ function CookieTable({ rows }) {
   )
 }
 
-function RightCard({ title, body }) {
+function Ext({ href, children }) {
   return (
-    <div className="pp-right-card">
-      <h4 className="pp-right-card__title">{title}</h4>
-      <p className="pp-right-card__body">{body}</p>
-    </div>
+    <a href={href} target="_blank" rel="noopener noreferrer">
+      {children}
+    </a>
   )
+}
+
+/** The section currently being read, for the contents list. */
+function useActiveSection() {
+  const [active, setActive] = useState(SECTIONS[0][0])
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
+        if (visible[0]) setActive(visible[0].target.id)
+      },
+      { rootMargin: '-80px 0px -65% 0px' }
+    )
+    SECTIONS.forEach(([id]) => {
+      const el = document.getElementById(id)
+      if (el) observer.observe(el)
+    })
+    return () => observer.disconnect()
+  }, [])
+  return active
 }

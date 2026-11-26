@@ -1,199 +1,96 @@
-/* ─── Cookie Consent Banner ──────────────────────────────────── */
-
-/* Slide-up animation */
-@keyframes cc-slide-up {
+/* The cookie banner: a quiet card in the corner. It never covers the page with an overlay. */
+.cc {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  z-index: 60;
+  width: min(420px, calc(100vw - 32px));
+  padding: 20px 20px 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  color: var(--fg);
+  box-shadow: var(--shadow-lg);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  animation: cc-in 0.25s ease both;
+}
+.cc:focus {
+  outline: none;
+}
+@keyframes cc-in {
   from {
     opacity: 0;
-    transform: translateY(24px);
+    transform: translateY(8px);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .cc {
+    animation: none;
   }
 }
 
-/* Screen-reader only utility */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
+.cc__title {
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+}
+.cc__text {
+  margin-top: 6px;
+  color: var(--muted);
+}
+.cc__text a {
+  font-weight: 500;
   white-space: nowrap;
-  border: 0;
 }
 
-/* Overlay anchors the banner to the bottom of the viewport */
-.cc-overlay {
-  position: fixed;
-  inset: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  top: auto;
-  z-index: 9999;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  padding: 1.25rem;
-  pointer-events: none; /* let clicks pass through the overlay itself */
-}
-
-/* Banner card */
-.cc-banner {
-  position: relative;
-  pointer-events: all;
-  width: 100%;
-  max-width: 860px;
-  background: var(--bg-surface-2, #151528);
-  border: 1px solid var(--border-card, rgba(124, 77, 255, 0.2));
-  border-radius: var(--radius-lg, 20px);
-  padding: 1.75rem 2rem;
-  box-shadow:
-    0 -4px 40px rgba(0, 0, 0, 0.5),
-    0 0 0 1px rgba(124, 77, 255, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
-  overflow: hidden;
-  animation: cc-slide-up 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-/* Purple ambient glow */
-.cc-glow {
-  position: absolute;
-  top: -60px;
-  right: -60px;
-  width: 260px;
-  height: 260px;
-  background: radial-gradient(circle, rgba(124, 77, 255, 0.18) 0%, transparent 70%);
-  pointer-events: none;
-  border-radius: 50%;
-}
-
-/* ─── Header ─────────────────────────────────────────────────── */
-.cc-header {
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
-}
-
-.cc-icon {
-  font-size: 1.6rem;
-  line-height: 1;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.cc-title {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--text-primary, #f0f0ff);
-  margin-bottom: 0.35rem;
-  line-height: 1.3;
-}
-
-.cc-desc {
-  font-size: 0.875rem;
-  color: var(--text-secondary, #9090b8);
-  line-height: 1.6;
-  margin: 0;
-}
-
-.cc-link {
-  color: var(--color-blue-light, #6cbcf7);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  transition: color 0.15s ease;
-}
-.cc-link:hover {
-  color: var(--color-purple-light, #9e75ff);
-}
-
-/* ─── Details panel ──────────────────────────────────────────── */
-.cc-details {
-  margin-bottom: 1.25rem;
-  border: 1px solid var(--border-subtle, rgba(124, 77, 255, 0.15));
-  border-radius: var(--radius-md, 12px);
+.cc__options {
+  display: grid;
+  gap: 2px;
+  margin-top: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
   overflow: hidden;
 }
-
-/* ─── Toggle row ─────────────────────────────────────────────── */
-.cc-toggle-row {
+.cc__option {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.9rem 1.1rem;
-  background: rgba(124, 77, 255, 0.04);
-  border-bottom: 1px solid var(--border-subtle, rgba(124, 77, 255, 0.15));
+  gap: 16px;
+  padding: 12px 14px;
+  background: var(--bg-soft);
+}
+.cc__option-name {
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+.cc__option-text {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+.cc__option-text code {
+  font-size: 0.78rem;
+}
+.cc__always {
+  flex: none;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.cc__switch {
+  position: relative;
+  flex: none;
+  width: 40px;
+  height: 24px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--line-strong);
+  cursor: pointer;
   transition: background 0.15s ease;
 }
-.cc-toggle-row:last-child {
-  border-bottom: none;
-}
-.cc-toggle-row:not(.cc-toggle-row--disabled):hover {
-  background: rgba(124, 77, 255, 0.08);
-}
-
-.cc-toggle-row--disabled {
-  opacity: 0.6;
-}
-
-.cc-toggle-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.cc-toggle-label {
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-primary, #f0f0ff);
-  margin-bottom: 0.2rem;
-  cursor: default;
-}
-.cc-toggle-row:not(.cc-toggle-row--disabled) .cc-toggle-label {
-  cursor: pointer;
-}
-
-.cc-toggle-desc {
-  font-size: 0.78rem;
-  color: var(--text-muted, #5a5a7a);
-  line-height: 1.5;
-  margin: 0;
-}
-
-/* ─── Toggle switch ──────────────────────────────────────────── */
-.cc-switch {
-  position: relative;
-  flex-shrink: 0;
-  width: 42px;
-  height: 24px;
-  border: none;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.1);
-  cursor: pointer;
-  padding: 0;
-  transition: background 0.2s ease, box-shadow 0.2s ease;
-}
-
-.cc-switch:focus-visible {
-  outline: 2px solid var(--color-purple, #7c4dff);
-  outline-offset: 2px;
-}
-
-.cc-switch--on {
-  background: var(--gradient-primary, linear-gradient(135deg, #7c4dff 0%, #42a5f5 100%));
-  box-shadow: 0 0 8px rgba(124, 77, 255, 0.5);
-}
-
-.cc-switch:disabled {
-  cursor: not-allowed;
-}
-
-.cc-switch-thumb {
+.cc__switch::after {
+  content: '';
   position: absolute;
   top: 3px;
   left: 3px;
@@ -201,120 +98,69 @@
   height: 18px;
   border-radius: 50%;
   background: #fff;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s ease;
+}
+.cc__switch.is-on {
+  background: var(--accent);
+}
+.cc__switch.is-on::after {
+  transform: translateX(16px);
 }
 
-.cc-switch--on .cc-switch-thumb {
-  transform: translateX(18px);
-}
-
-/* ─── Actions ────────────────────────────────────────────────── */
-.cc-actions {
+.cc__actions {
   display: flex;
+  justify-content: flex-end;
   align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
 }
-
-/* Push primary CTA to the right */
-.cc-actions .cc-btn--primary {
-  margin-left: auto;
-}
-
-/* Base button */
-.cc-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.55rem 1.1rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  border-radius: var(--radius-sm, 6px);
-  border: none;
+/* Reject and Accept look the same on purpose: neither answer is nudged. */
+.cc__btn {
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 9px;
+  background: var(--surface);
+  color: var(--fg);
+  font: 600 0.86rem/1 var(--font);
   cursor: pointer;
-  transition: all 0.15s ease;
-  white-space: nowrap;
-  line-height: 1.4;
 }
-
-/* Ghost – "Customise" */
-.cc-btn--ghost {
+.cc__btn:hover {
+  border-color: var(--fg-soft);
+}
+.cc__btn--main {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+.cc__btn--main:hover {
+  border-color: var(--accent-hover);
+  background: var(--accent-hover);
+}
+.cc__btn--link {
+  margin-right: auto;
+  padding: 0 4px;
+  border-color: transparent;
   background: transparent;
-  color: var(--text-secondary, #9090b8);
-  border: 1px solid var(--border-subtle, rgba(124, 77, 255, 0.15));
+  color: var(--accent);
 }
-.cc-btn--ghost:hover {
-  color: var(--text-primary, #f0f0ff);
-  border-color: var(--border-bright, rgba(124, 77, 255, 0.4));
-  background: rgba(124, 77, 255, 0.06);
+.cc__btn--link:hover {
+  border-color: transparent;
+  color: var(--accent-hover);
 }
 
-/* Secondary – "Reject non-essential" / "Save preferences" */
-.cc-btn--secondary {
-  background: rgba(124, 77, 255, 0.12);
-  color: var(--color-purple-light, #9e75ff);
-  border: 1px solid var(--border-card, rgba(124, 77, 255, 0.2));
-}
-.cc-btn--secondary:hover {
-  background: rgba(124, 77, 255, 0.22);
-  border-color: var(--border-bright, rgba(124, 77, 255, 0.4));
-  color: var(--text-primary, #f0f0ff);
-}
-
-/* Primary – "Accept all" */
-.cc-btn--primary {
-  background: var(--gradient-primary, linear-gradient(135deg, #7c4dff 0%, #42a5f5 100%));
-  color: #fff;
-  box-shadow: 0 2px 12px rgba(124, 77, 255, 0.35);
-}
-.cc-btn--primary:hover {
-  opacity: 0.9;
-  box-shadow: 0 4px 20px rgba(124, 77, 255, 0.5);
-  transform: translateY(-1px);
-}
-.cc-btn--primary:active {
-  transform: translateY(0);
-}
-
-.cc-btn:focus-visible {
-  outline: 2px solid var(--color-purple, #7c4dff);
-  outline-offset: 2px;
-}
-
-/* ─── Responsive ─────────────────────────────────────────────── */
-@media (max-width: 600px) {
-  .cc-overlay {
-    padding: 0.75rem;
+@media (max-width: 520px) {
+  .cc {
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    width: auto;
   }
-
-  .cc-banner {
-    padding: 1.25rem 1.1rem;
-    border-radius: var(--radius-md, 12px);
+  .cc__actions {
+    flex-wrap: wrap;
   }
-
-  .cc-header {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .cc-icon {
-    font-size: 1.4rem;
-  }
-
-  .cc-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .cc-actions .cc-btn--primary {
-    margin-left: 0;
-    order: -1; /* Accept all first on mobile */
-  }
-
-  .cc-btn {
-    width: 100%;
-    justify-content: center;
-    padding: 0.65rem 1rem;
+  .cc__actions .cc__btn:not(.cc__btn--link) {
+    flex: 1;
   }
 }

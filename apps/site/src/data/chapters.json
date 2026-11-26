@@ -1,0 +1,35 @@
+{
+  "duration": 35.56,
+  "chapters": [
+    {
+      "id": "map",
+      "label": "Map",
+      "start": 0,
+      "end": 7.29
+    },
+    {
+      "id": "ownership",
+      "label": "Ownership",
+      "start": 7.29,
+      "end": 12.91
+    },
+    {
+      "id": "authorship",
+      "label": "AI authorship",
+      "start": 12.91,
+      "end": 18.13
+    },
+    {
+      "id": "flows",
+      "label": "Flows",
+      "start": 18.13,
+      "end": 26.08
+    },
+    {
+      "id": "tours",
+      "label": "Tours",
+      "start": 26.08,
+      "end": 32.8
+    }
+  ]
+}

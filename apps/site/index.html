@@ -4,25 +4,41 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    <!-- The theme before first paint: the visitor's choice, else the system's. -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('codearchy.site.theme');
+          if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          document.documentElement.dataset.theme = t;
+        } catch (_) {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0c0e13" media="(prefers-color-scheme: dark)" />
+
     <!-- Primary Meta Tags -->
-    <title>CodeArchy — Offline AI Architecture Visualizer for VS Code</title>
-    <meta name="title" content="CodeArchy — Offline AI Architecture Visualizer for VS Code" />
-    <meta name="description" content="Parse any codebase instantly. Generate a senior engineer's whiteboard architecture diagram powered by Gemma 4 + Ollama. Ask questions. All locally, all privately. Free VS Code extension." />
-    <meta name="keywords" content="CodeArchy, VS Code extension, code architecture, AI architect, Gemma 4, Ollama, offline AI, dependency graph, React Flow, Cytoscape, open source, code visualization, codebase analysis, TypeScript, JavaScript, Python, Java, Go, Rust" />
-    <meta name="author" content="I. Kennedy Yinusa" />
+    <title>CodeArchy: see how your codebase is built</title>
+    <meta name="title" content="CodeArchy: see how your codebase is built" />
+    <meta name="description" content="CodeArchy maps any repository into an architecture you can explore: dependencies, request flows, who owns each part, and how much AI wrote. Free and open source, for VS Code, the browser and your AI agent. Runs on your machine." />
+    <meta name="keywords" content="CodeArchy, code architecture, architecture map, codebase visualization, code ownership, bus factor, AI authorship, AI-written code, request flows, onboarding, VS Code extension, Cursor, MCP, open source" />
+    <meta name="author" content="CodeArchy" />
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="https://codearchy.com/" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="/assets/images/logo.png" />
+    <link rel="icon" type="image/png" href="/assets/images/mark-dark.png" media="(prefers-color-scheme: light)" />
+    <link rel="icon" type="image/png" href="/assets/images/mark-light.png" media="(prefers-color-scheme: dark)" />
     <link rel="apple-touch-icon" href="/assets/images/logo.png" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://codearchy.com/" />
-    <meta property="og:title" content="CodeArchy — Offline AI Architecture Visualizer for VS Code" />
-    <meta property="og:description" content="Parse any codebase instantly. Generate a senior engineer's whiteboard architecture diagram. Ask questions. All locally, all privately. Free & open source." />
-    <meta property="og:image" content="https://codearchy.com/assets/images/explainer.png" />
+    <meta property="og:title" content="CodeArchy: see how your codebase is built" />
+    <meta property="og:description" content="An architecture map of your code: dependencies, request flows, who owns each part, and how much AI wrote. Free and open source." />
+    <meta property="og:image" content="https://codearchy.com/assets/images/og.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:site_name" content="CodeArchy" />
@@ -31,9 +47,9 @@
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content="https://codearchy.com/" />
-    <meta name="twitter:title" content="CodeArchy — Offline AI Architecture Visualizer for VS Code" />
-    <meta name="twitter:description" content="Parse any codebase instantly. Generate architecture diagrams with Gemma 4 + Ollama. Fully offline, fully private. Free VS Code extension." />
-    <meta name="twitter:image" content="https://codearchy.com/assets/images/explainer.png" />
+    <meta name="twitter:title" content="CodeArchy: see how your codebase is built" />
+    <meta name="twitter:description" content="An architecture map of your code: dependencies, request flows, who owns each part, and how much AI wrote. Free and open source." />
+    <meta name="twitter:image" content="https://codearchy.com/assets/images/og.png" />
 
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
@@ -43,83 +59,43 @@
       "name": "CodeArchy",
       "applicationCategory": "DeveloperApplication",
       "applicationSubCategory": "Code Analysis Tool",
-      "operatingSystem": "Windows, macOS, Linux",
-      "description": "Offline AI architect for VS Code. Parses codebases, generates professional architecture diagrams with Gemma 4 via Ollama. Conversational AI assistant with neural TTS. Fully private — zero data leaves your machine.",
+      "operatingSystem": "Windows, macOS, Linux, Web",
+      "description": "An architecture map of your code, generated on your machine: dependencies, request flows, who owns each part, and how much AI wrote. For VS Code, the browser and your AI agent (MCP).",
       "url": "https://codearchy.com/",
       "downloadUrl": "https://marketplace.visualstudio.com/items?itemName=iyinusa.codearchy",
       "installUrl": "vscode:extension/iyinusa.codearchy",
       "license": "https://github.com/CodeArchy/codearchy/blob/main/LICENSE",
-      "softwareVersion": "1.0.4",
-      "datePublished": "2026-05-14",
-      "dateModified": "2026-05-17",
-      "author": {
-        "@type": "Person",
-        "name": "I. Kennedy Yinusa",
-        "url": "https://github.com/iyinusa"
-      },
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
+      "softwareVersion": "2.1.1",
+      "dateModified": "2026-11-26",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
       "featureList": [
-        "Multi-language AST parsing (TypeScript, JavaScript, Python, Java, Go, Rust)",
-        "Gemma 4 AI architecture inference via Ollama",
-        "Interactive architecture diagrams",
-        "Cytoscape.js dense-graph view",
-        "Conversational AI assistant",
-        "Kokoro neural TTS offline voice output",
-        "Story narrator with AI walkthroughs",
-        "Fully offline — zero network calls"
+        "Architecture map from the code: packages, components, files and symbols",
+        "Ownership: who owns each part, with the bus factor",
+        "AI authorship from git evidence",
+        "Request flows traced call by call",
+        "Guided onboarding tours",
+        "Questions answered with citations",
+        "10 languages: TypeScript, JavaScript, Python, Java, Kotlin, Go, Rust, C#, PHP and Ruby",
+        "Private by default: parsed on your machine; AI optional"
       ],
-      "releaseNotes": "https://github.com/CodeArchy/codearchy/blob/main/CHANGELOG.md",
+      "releaseNotes": "https://github.com/CodeArchy/codearchy/blob/main/apps/vscode/CHANGELOG.md",
       "codeRepository": "https://github.com/CodeArchy/codearchy",
-      "screenshot": "https://codearchy.com/assets/images/flow-visualization.png",
-      "keywords": "VS Code, architecture, AI, Gemma 4, Ollama, offline, open source, code analysis"
+      "screenshot": "https://codearchy.com/assets/demo/demo-poster.webp"
     }
     </script>
 
-    <!-- Google tag (gtag.js) — Consent Mode v2 -->
-    <!-- analytics_storage and ad_storage default to 'denied' until the user
-         explicitly accepts cookies via the consent banner. -->
+    <!-- Google Analytics runs only after a visitor allows it (src/lib/consent.js loads it then).
+         Until then every consent signal is denied and nothing is requested from Google. -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){ dataLayer.push(arguments); }
-
-      // Default: deny all consent signals before user choice
       gtag('consent', 'default', {
-        analytics_storage:  'denied',
-        ad_storage:         'denied',
-        ad_user_data:       'denied',
-        ad_personalization: 'denied',
-        wait_for_update:    500
+        analytics_storage: 'denied',
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied'
       });
-
-      // Restore consent from a previous session (if already stored)
-      ;(function () {
-        try {
-          var stored = JSON.parse(localStorage.getItem('codearchy_cookie_consent') || 'null');
-          if (stored) {
-            gtag('consent', 'update', {
-              analytics_storage:  stored.analytics  ? 'granted' : 'denied',
-              ad_storage:         stored.marketing  ? 'granted' : 'denied',
-              ad_user_data:       stored.marketing  ? 'granted' : 'denied',
-              ad_personalization: stored.marketing  ? 'granted' : 'denied'
-            });
-          }
-        } catch (_) {}
-      })();
     </script>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-REPDR6673K"></script>
-    <script>
-      gtag('js', new Date());
-      gtag('config', 'G-REPDR6673K', { send_page_view: true });
-    </script>
-
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   </head>
   <body>
     <div id="root"></div>
