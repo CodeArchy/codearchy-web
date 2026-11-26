@@ -13,3 +13,12 @@ packages:
 
 onlyBuiltDependencies:
   - esbuild
+
+# Security fixes in transitive dependencies whose parents haven't moved yet:
+#   sharp: only @huggingface/transformers (via kokoro-js, the web voice) depends on it, for
+#          Node; the browser build never loads it. kokoro-js still pins transformers ^3 (sharp ^0.34).
+#   glob:  workbox-build (vite-plugin-pwa) pins glob ^11, for listing the files the service
+#          worker precaches at build time; glob 14 also brings the patched minimatch 11.
+overrides:
+  sharp: ^0.35.5
+  'glob@>=9.0.0 <14.0.2': ^14.0.6
