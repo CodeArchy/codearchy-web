@@ -306,6 +306,95 @@
   aspect-ratio: 16 / 9;
 }
 
+/* ── samples ────────────────────────────────────────────────── */
+.samples {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+@media (max-width: 1080px) {
+  .samples {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.sample {
+  --tint: var(--brand, var(--fg));
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 100%;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--fg);
+  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.sample:hover {
+  color: var(--fg);
+  border-color: color-mix(in srgb, var(--tint) 55%, var(--line));
+  transform: translateY(-2px);
+  box-shadow: 0 10px 26px -12px color-mix(in srgb, var(--tint) 45%, transparent);
+}
+.sample:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.sample__logo {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--tint) 13%, var(--surface));
+  color: color-mix(in srgb, var(--tint) 80%, var(--logo-lift));
+}
+.sample__text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.sample__text strong {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+.sample__text span {
+  color: var(--muted);
+  font-size: 0.8rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.samples__note {
+  margin-top: 28px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+@media (max-width: 560px) {
+  .samples {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .sample {
+    padding: 12px;
+    gap: 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sample {
+    transition: none;
+  }
+  .sample:hover {
+    transform: none;
+  }
+}
+
 /* ── more ───────────────────────────────────────────────────── */
 .more,
 .privacy-points {

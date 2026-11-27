@@ -260,6 +260,7 @@ export function App() {
             onFolder={() => void openFolder()}
             onZip={openZip}
             onSample={() => void openSample()}
+            onSampleRepo={(repo) => openRepository(repo)}
             repoUrl={repoUrl}
             onRepoUrl={setRepoUrl}
             onRepo={() => openRepository(repoUrl)}

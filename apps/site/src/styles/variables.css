@@ -56,6 +56,8 @@
   --font-mono: var(--mono);
   --radius-md: var(--radius);
   --radius-lg-legacy: var(--radius-lg);
+  /* Mixed into brand colours so every sample logo reads on its background. */
+  --logo-lift: #000000;
   color-scheme: light;
 }
 
@@ -81,5 +83,6 @@
   --shadow-md: 0 14px 34px -14px rgba(0, 0, 0, 0.6);
   --shadow-lg: 0 30px 80px -30px rgba(0, 0, 0, 0.75);
   --header-bg: rgba(12, 14, 19, 0.8);
+  --logo-lift: #ffffff;
   color-scheme: dark;
 }

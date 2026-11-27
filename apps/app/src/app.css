@@ -6,6 +6,7 @@
     --panel: #f6f7f9;
     --accent: #3b5bdb;
     --on-accent: #ffffff;
+    --logo-lift: #000000;
     color-scheme: light;
 }
 /* System by default; the theme switch sets data-theme on <html>. */
@@ -18,6 +19,7 @@
         --panel: #1c1f26;
         --accent: #8ea2ff;
         --on-accent: #15171c;
+        --logo-lift: #ffffff;
         color-scheme: dark;
     }
 }
@@ -29,6 +31,7 @@
     --panel: #1c1f26;
     --accent: #8ea2ff;
     --on-accent: #15171c;
+    --logo-lift: #ffffff;
     color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -130,7 +133,7 @@ a { color: var(--accent); }
 .landing-top { display: flex; justify-content: flex-end; margin: -8vh 0 6vh; }
 
 /* Ways in */
-.open-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 6px; }
+.open-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 6px; }
 .landing .open-tile, .open-dialog .open-tile { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left; padding: 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; font: inherit; transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease; }
 .open-tile:hover { border-color: var(--accent); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(16, 24, 40, 0.1); }
 .open-tile .ca-icon { color: var(--accent); margin-bottom: 4px; }
@@ -141,6 +144,25 @@ a { color: var(--accent); }
 .drop-note { margin: 8px 0 0; font-size: 13px; }
 @media (max-width: 560px) { .open-tiles { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { .open-tile { transition: none; } .open-tile:hover { transform: none; } }
+/* Try a sample: famous repositories, one click from their architecture. */
+.samples { margin: 18px 0 4px; text-align: left; }
+.samples-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin-bottom: 10px; }
+.samples-head h2 { margin: 0; font-size: 15px; }
+.samples-head .muted { font-size: 12.5px; }
+.sample-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.landing button.sample, .open-dialog button.sample { width: 100%; display: flex; align-items: center; gap: 9px; padding: 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); font: inherit; font-weight: 400; text-align: left; cursor: pointer; transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease; }
+.sample { --tint: var(--brand, var(--fg)); }
+.landing button.sample:hover, .open-dialog button.sample:hover { border-color: color-mix(in srgb, var(--tint) 55%, var(--line)); transform: translateY(-1px); box-shadow: 0 6px 18px color-mix(in srgb, var(--tint) 14%, transparent); }
+.sample:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sample-logo { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 10px; background: color-mix(in srgb, var(--tint) 13%, var(--bg)); color: color-mix(in srgb, var(--tint) 80%, var(--logo-lift)); }
+.sample-text { min-width: 0; display: flex; flex-direction: column; }
+.sample-text strong { font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sample-text span { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.samples-foot { margin: 8px 0 0; font-size: 12.5px; }
+.samples-foot button.link { font: inherit; background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; }
+.samples-foot button.link:hover { text-decoration: underline; }
+@media (max-width: 560px) { .sample-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .sample-files { display: none; } }
+@media (prefers-reduced-motion: reduce) { .sample { transition: none; } .landing button.sample:hover, .open-dialog button.sample:hover { transform: none; } }
 
 /* Opening: what's happening, from the moment you pick something */
 .opening { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); padding: 16px 18px; display: grid; gap: 12px; }
