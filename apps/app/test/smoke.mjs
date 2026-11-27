@@ -187,6 +187,25 @@ for (const name of wanted) {
         await draft.getByRole('button', { name: 'Discard' }).click();
         await page.click('.ca-segmented button:has-text("Map")');
 
+        // Settings (the gear after Voice): it says an index is stored, not the code; the open codebase's
+        // index is listed and can't be deleted; the limit is off by default.
+        const openSettings = async () => {
+            await page.getByRole('button', { name: 'Settings', exact: true }).click();
+            const dialog = page.getByRole('dialog', { name: 'Settings' });
+            await dialog.getByText('CodeArchy stores an index, not your code.').waitFor();
+            await dialog.locator('.settings-stats').waitFor();
+            return dialog;
+        };
+        let prefs = await openSettings();
+        const keepsIndexes = (await prefs.locator('.settings-warning').count()) === 0;
+        if (keepsIndexes) {
+            const sampleRow = prefs.locator('.settings-indexes li', { hasText: 'polyglot sample' });
+            await sampleRow.locator('.settings-badge', { hasText: 'open' }).waitFor();
+            assert.ok(await sampleRow.getByRole('button', { name: /Delete/ }).isDisabled(), "the open codebase's index can't be deleted");
+        }
+        assert.equal(await prefs.getByRole('checkbox').isChecked(), false, 'the limit is off by default');
+        await prefs.getByRole('button', { name: 'Close' }).click();
+
         // The Companion: a real `codearchy serve`. Its link opens the app connected; a reload resumes the
         // session; stopping it says so. (The page still goes through the CSP's connect-src.)
         const companion = startCompanion();
@@ -197,6 +216,13 @@ for (const name of wanted) {
             assert.doesNotMatch(page.url(), /pair=/, 'the token leaves the address bar');
             await page.click('.ca-segmented button:has-text("Flows")');
             await page.locator('.ca-flow-item', { hasText: 'main' }).first().waitFor();
+
+            // Settings → another browser: the Companion makes a one-time link.
+            prefs = await openSettings();
+            await prefs.getByRole('button', { name: 'Make a link' }).click();
+            assert.match(await prefs.locator('.copy-command code').first().textContent(), /#pair=[\w-]+@127\.0\.0\.1:\d+$/, 'a pairing link for another browser');
+            await prefs.getByRole('button', { name: 'Close' }).click();
+            await page.click('.ca-segmented button:has-text("Map")');
 
             // Authorship through the Companion: the lens, then the code viewer's gutter, review and correction.
             await page.click('.ca-segmented button:has-text("Map")');
@@ -251,6 +277,17 @@ for (const name of wanted) {
         await openDialog.waitFor({ state: 'detached' });
         await node('pkg:rust').waitFor();
         assert.match(await page.locator('.status').textContent(), new RegExp(`${GOLDEN_POLYGLOT.files.length} files`), 'zip: golden file count');
+
+        // Settings: the zip is the open index now, so the sample's can be deleted (Delete, then Delete? to confirm).
+        if (keepsIndexes) {
+            prefs = await openSettings();
+            const sampleRow = prefs.locator('.settings-indexes li', { hasText: 'polyglot sample' });
+            await sampleRow.getByRole('button', { name: 'Delete' }).click();
+            await sampleRow.getByRole('button', { name: 'Delete?' }).click();
+            await prefs.getByRole('status').filter({ hasText: 'Deleted the index of polyglot sample' }).waitFor();
+            assert.equal(await sampleRow.count(), 0, 'the sample index is gone');
+            await prefs.getByRole('button', { name: 'Close' }).click();
+        }
 
         // AI: settings (private by default, Ollama setup for this origin, keys), an auto-summary card, and chat
         // that offers setup when no model is ready. Then a reload keeps the key (encrypted) and the tier.

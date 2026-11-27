@@ -17,7 +17,8 @@ import { workerAiClient } from './ai/client';
 import { CodeViewer } from './CodeViewer';
 import { BranchReportDialog } from './BranchReport';
 import { ENGINE_BASE } from './generated/engine';
-import { Logo, OpenActions, OpeningCard, ThemeSwitch, useTheme, type Opening } from './chrome';
+import { Logo, OpenActions, OpeningCard, SettingsButton, ThemeSwitch, useTheme, type Opening } from './chrome';
+import { SettingsDialog } from './Settings';
 import { webVoiceClient } from './voice/voice';
 
 type Phase = { kind: 'landing' } | { kind: 'ready' };
@@ -56,6 +57,7 @@ export function App() {
     const [disconnected, setDisconnected] = useState<string>();
     const [pairLink, setPairLink] = useState('');
     const [reportOpen, setReportOpen] = useState(false);
+    const [settingsOpen, setSettingsOpen] = useState(false);
     const client: EngineClient & { readFile(path: string): Promise<string | undefined> } = companion?.engine ?? engine;
     const [phase, setPhase] = useState<Phase>({ kind: 'landing' });
     const [summary, setSummary] = useState<WorkspaceSummary>();
@@ -336,6 +338,7 @@ export function App() {
                         }
                         toolbarExtras={
                             <>
+                                <SettingsButton onClick={() => setSettingsOpen(true)} />
                                 <span
                                     className="status"
                                     title={`${summary.files.toLocaleString()} files · ${summary.edges.toLocaleString()} dependencies · ${
@@ -393,6 +396,7 @@ export function App() {
             ) : (
                 <main className="landing">
                     <div className="landing-top">
+                        <SettingsButton onClick={() => setSettingsOpen(true)} />
                         <ThemeSwitch theme={theme} onChange={setTheme} />
                     </div>
                     <h1>
@@ -428,6 +432,7 @@ export function App() {
                     </p>
                 </main>
             )}
+            {settingsOpen ? <SettingsDialog engine={engine} companion={companion} summary={summary} onClose={() => setSettingsOpen(false)} /> : null}
             {dragging ? <div className="drop-hint">Drop a folder or a .zip to open it</div> : null}
         </div>
     );
