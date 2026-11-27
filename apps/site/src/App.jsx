@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Header from './components/site/Header'
 import Hero from './components/site/Hero'
+import Samples from './components/site/Samples'
 import Features from './components/site/Features'
 import More from './components/site/More'
 import GetStarted from './components/site/GetStarted'
@@ -61,6 +62,7 @@ export default function App() {
       <Header theme={theme} onToggleTheme={toggle} />
       <main>
         <Hero />
+        <Samples />
         <Features />
         <More />
         <GetStarted />

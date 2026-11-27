@@ -124,7 +124,7 @@ for (const name of wanted) {
         await page.reload();
         assert.equal(await page.locator('html').getAttribute('data-theme'), 'dark', 'the theme persists');
         // Opening shows what it's doing straight away (no silent wait before indexing).
-        await Promise.all([page.locator('.opening').waitFor(), page.getByRole('button', { name: /Try the sample/ }).click()]);
+        await Promise.all([page.locator('.opening').waitFor(), page.getByRole('button', { name: /^Offline sample$/ }).click()]);
         await node('pkg:rust').waitFor();
         assert.equal(await page.locator('.ca-root').getAttribute('data-theme'), 'dark', 'the Map follows the theme');
         // In the toolbar the theme is one button that cycles: Dark → System.
@@ -306,7 +306,7 @@ for (const name of wanted) {
         await page.click('.ca-segmented button:has-text("Map")');
 
         await page.reload();
-        await page.getByRole('button', { name: /Try the sample/ }).click();
+        await page.getByRole('button', { name: /^Offline sample$/ }).click();
         await node('pkg:rust').waitFor();
         await page.getByRole('button', { name: 'AI', exact: true }).click();
         await settings.getByLabel(/^Structure Names/).waitFor();

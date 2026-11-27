@@ -4,6 +4,7 @@ import { GitHubIcon, MoonIcon, SunIcon } from '../icons'
 import { Logo } from './Logo'
 
 const NAV = [
+  { href: '/#samples', label: 'Try it' },
   { href: '/#features', label: 'Features' },
   { href: '/#get-started', label: 'Get started' },
   { href: '/#privacy', label: 'Privacy' },

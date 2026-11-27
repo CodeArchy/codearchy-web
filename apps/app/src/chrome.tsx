@@ -3,8 +3,9 @@
  * "open a codebase" actions (landing page and the Open dialog) and the card
  * that shows what opening is doing, from the moment you pick something.
  */
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 import { Icon } from '@codearchy/ui';
+import SAMPLES from './samples.json';
 
 // ─── logo ───────────────────────────────────────────────────────────────────
 
@@ -231,6 +232,8 @@ export interface OpenActionsProps {
     onFolder(): void;
     onZip(): void;
     onSample(): void;
+    /** Open a sample repository (owner/repo on GitHub). */
+    onSampleRepo(repo: string): void;
     repoUrl: string;
     onRepoUrl(v: string): void;
     onRepo(): void;
@@ -240,7 +243,7 @@ export interface OpenActionsProps {
     onPair(): void;
 }
 
-/** The ways in: a folder, a .zip, the sample, or the Companion. */
+/** The ways in: a folder, a .zip, a sample repository, a repository URL, or the Companion. */
 export function OpenActions(props: OpenActionsProps) {
     return (
         <>
@@ -255,13 +258,9 @@ export function OpenActions(props: OpenActionsProps) {
                     <strong>Open a .zip</strong>
                     <span>A GitHub download works as it is</span>
                 </button>
-                <button type="button" className="open-tile" onClick={props.onSample}>
-                    <Icon name="sparkles" size={20} />
-                    <strong>Try the sample</strong>
-                    <span>A small polyglot repository</span>
-                </button>
             </div>
             <p className="muted drop-note">…or drop a folder or a .zip anywhere on this page.</p>
+            <Samples onOpen={props.onSampleRepo} onOffline={props.onSample} />
             <form
                 className="pair repo"
                 aria-label="Open a public repository"
@@ -301,6 +300,66 @@ export function OpenActions(props: OpenActionsProps) {
                 </form>
             </section>
         </>
+    );
+}
+
+type Sample = (typeof SAMPLES.samples)[number];
+
+/** A sample's logo (Simple Icons, one path), drawn in the card's --brand colour (the text colour for black logos). */
+function SampleLogo({ sample }: { sample: Sample }) {
+    return (
+        <span className="sample-logo" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" focusable="false">
+                <path d={sample.logo.path} fill="currentColor" />
+            </svg>
+        </span>
+    );
+}
+
+/** Well-known open-source repositories, one click from their architecture; and the offline sample. */
+function Samples({ onOpen, onOffline }: { onOpen(repo: string): void; onOffline(): void }) {
+    const [all, setAll] = useState(false);
+    const shown = all ? SAMPLES.samples : SAMPLES.samples.filter((s) => s.featured);
+    return (
+        <section className="samples" aria-labelledby="samples-title">
+            <div className="samples-head">
+                <h2 id="samples-title">Try a sample</h2>
+                <span className="muted">Famous open-source projects, downloaded from GitHub into this tab</span>
+            </div>
+            <ul className="sample-grid">
+                {shown.map((s) => (
+                    <li key={s.repo}>
+                        <button
+                            type="button"
+                            className="sample"
+                            style={s.logo.color ? ({ '--brand': s.logo.color } as CSSProperties) : undefined}
+                            onClick={() => onOpen(s.repo)}
+                            title={`${s.repo}: ${s.blurb}. About ${s.seconds} s to map.`}
+                            aria-label={`Open ${s.name} (${s.repo}): ${s.language}, ${s.files.toLocaleString('en')} files`}
+                        >
+                            <SampleLogo sample={s} />
+                            <span className="sample-text">
+                                <strong>{s.name}</strong>
+                                <span>
+                                    {s.language}
+                                    <span className="sample-files"> · {s.files.toLocaleString('en')} files</span>
+                                </span>
+                            </span>
+                        </button>
+                    </li>
+                ))}
+            </ul>
+            <p className="samples-foot muted">
+                <button type="button" className="link" onClick={() => setAll((v) => !v)} aria-expanded={all}>
+                    {all ? 'Show fewer' : `Show all ${SAMPLES.samples.length}`}
+                </button>
+                <span aria-hidden="true"> · </span>
+                <button type="button" className="link" onClick={onOffline}>
+                    Offline sample
+                </button>{' '}
+                (a small polyglot repository, no download)
+            </p>
+        </section>
     );
 }
 
