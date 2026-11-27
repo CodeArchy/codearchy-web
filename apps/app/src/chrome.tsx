@@ -97,6 +97,20 @@ function svg(children: ReactNode) {
         </svg>
     );
 }
+/** Settings: the gear after Voice in the toolbar (and next to the theme on the landing page). */
+export function SettingsButton({ onClick }: { onClick(): void }) {
+    return (
+        <button type="button" className="ca-icon-button settings-button" title="Settings: storage, export folder, other browsers" aria-label="Settings" onClick={onClick}>
+            {svg(
+                <>
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+                </>
+            )}
+        </button>
+    );
+}
+
 function SunIcon() {
     return svg(
         <>
@@ -364,7 +378,7 @@ function Samples({ onOpen, onOffline }: { onOpen(repo: string): void; onOffline(
 }
 
 /** A command to paste into a terminal, with a Copy button. */
-function CopyCommand({ command }: { command: string }) {
+export function CopyCommand({ command }: { command: string }) {
     const [copied, setCopied] = useState(false);
     const copy = () =>
         void navigator.clipboard?.writeText(command).then(
