@@ -14,7 +14,7 @@ export default function Samples() {
           </p>
         </div>
         <ul className="samples reveal">
-          {DATA.samples.map((s) => (
+          {DATA.samples.filter((s) => s.site !== false).map((s) => (
             <li key={s.repo}>
               <a
                 className="sample"
